@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * Interface gráfica principal do Launchpad com suporte a CRUD completo via nuvem,
- * sistema de Looper e animações de interface customizadas.
+ * sistema de Looper com animação, e integração de Mouse/Teclado.
  */
 public class LaunchpadAvancado extends JFrame {
 
@@ -124,7 +124,7 @@ public class LaunchpadAvancado extends JFrame {
 
         for (int i = 0; i < 12; i++) {
             PadLuminoso pad = new PadLuminoso(Color.decode(coresHex[i]), nomesTeclas[i]);
-            configurarKeyBinding(pad, codigosTeclas[i]);
+            configurarInteracoesPad(pad, codigosTeclas[i]);
             painelPad.add(pad);
             listaDePads.add(pad); // Registra o pad na nossa lista
         }
@@ -267,7 +267,10 @@ public class LaunchpadAvancado extends JFrame {
         menuPresets.add(itemNovo);
     }
 
-    private void configurarKeyBinding(JButton pad, int keyCode) {
+    private void configurarInteracoesPad(PadLuminoso pad, int keyCode) {
+        // ==========================================
+        // 1. INTERAÇÃO PELO TECLADO
+        // ==========================================
         InputMap im = pad.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = pad.getActionMap();
 
@@ -280,40 +283,7 @@ public class LaunchpadAvancado extends JFrame {
                 if (!pad.getModel().isPressed()) {
                     pad.getModel().setArmed(true);
                     pad.getModel().setPressed(true); 
-                    
-                    String letraBotao = pad.getText();
-                    PadLuminoso padLum = (PadLuminoso) pad;
-
-                    if (emModoEdicao) {
-                        JFileChooser fileChooser = new JFileChooser(new File("Assets"));
-                        fileChooser.setDialogTitle("Escolha um arquivo .wav para a tecla " + letraBotao);
-                        int resposta = fileChooser.showOpenDialog(LaunchpadAvancado.this);
-                        if (resposta == JFileChooser.APPROVE_OPTION) {
-                            File arquivoEscolhido = fileChooser.getSelectedFile();
-                            meuDrumKit.associarSom(letraBotao, arquivoEscolhido.getPath());
-                        }
-                        pad.getModel().setArmed(false);
-                        pad.getModel().setPressed(false);
-                    } else {
-                        String caminhoSom = meuDrumKit.obterCaminhoSom(letraBotao);
-                        
-                        // O nome da tecla some quando o loop liga, então usamos a variável original
-                        String nomeRealDaTecla = padLum.getTextoOriginal();
-                        
-                        // LÓGICA DO LOOP: Se for R, F ou V (As 3 da direita)
-                        if (nomeRealDaTecla.equals("R") || nomeRealDaTecla.equals("F") || nomeRealDaTecla.equals("V")) {
-                            if (padLum.isLoopAtivado()) {
-                                padLum.setLoopAtivado(false);
-                                AudioPlayer.pararLoop(nomeRealDaTecla); 
-                            } else {
-                                padLum.setLoopAtivado(true);
-                                AudioPlayer.iniciarLoop(caminhoSom, nomeRealDaTecla); 
-                            }
-                        } else {
-                            // LÓGICA DO TRIGGER: Qualquer outro botão toca 1x normal
-                            AudioPlayer.tocarSom(caminhoSom);
-                        }
-                    }
+                    executarAcaoPressionar(pad);
                 }
             }
         });
@@ -321,12 +291,70 @@ public class LaunchpadAvancado extends JFrame {
         am.put("soltar", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!emModoEdicao) {
-                    pad.getModel().setArmed(false);
-                    pad.getModel().setPressed(false); 
-                }
+                executarAcaoSoltar(pad);
             }
         });
+
+        // ==========================================
+        // 2. INTERAÇÃO PELO MOUSE
+        // ==========================================
+        pad.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                executarAcaoPressionar(pad);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                executarAcaoSoltar(pad);
+            }
+        });
+    }
+
+    /**
+     * Lógica centralizada: O que acontece quando o botão afunda (Teclado ou Mouse)
+     */
+    private void executarAcaoPressionar(PadLuminoso padLum) {
+        String nomeRealDaTecla = padLum.getTextoOriginal();
+
+        if (emModoEdicao) {
+            JFileChooser fileChooser = new JFileChooser(new File("Assets"));
+            fileChooser.setDialogTitle("Escolha um arquivo .wav para a tecla " + nomeRealDaTecla);
+            int resposta = fileChooser.showOpenDialog(LaunchpadAvancado.this);
+            
+            if (resposta == JFileChooser.APPROVE_OPTION) {
+                File arquivoEscolhido = fileChooser.getSelectedFile();
+                meuDrumKit.associarSom(nomeRealDaTecla, arquivoEscolhido.getPath());
+            }
+            
+            padLum.getModel().setArmed(false);
+            padLum.getModel().setPressed(false);
+            
+        } else {
+            String caminhoSom = meuDrumKit.obterCaminhoSom(nomeRealDaTecla);
+            
+            if (nomeRealDaTecla.equals("R") || nomeRealDaTecla.equals("F") || nomeRealDaTecla.equals("V")) {
+                if (padLum.isLoopAtivado()) {
+                    padLum.setLoopAtivado(false);
+                    AudioPlayer.pararLoop(nomeRealDaTecla); 
+                } else {
+                    padLum.setLoopAtivado(true);
+                    AudioPlayer.iniciarLoop(caminhoSom, nomeRealDaTecla); 
+                }
+            } else {
+                AudioPlayer.tocarSom(caminhoSom);
+            }
+        }
+    }
+
+    /**
+     * Lógica centralizada: O que acontece quando o botão sobe (Teclado ou Mouse)
+     */
+    private void executarAcaoSoltar(PadLuminoso padLum) {
+        if (!emModoEdicao) {
+            padLum.getModel().setArmed(false);
+            padLum.getModel().setPressed(false); 
+        }
     }
 
     public static void main(String[] args) {
@@ -338,7 +366,7 @@ public class LaunchpadAvancado extends JFrame {
     // =========================================================
     class PadLuminoso extends JButton {
         private Color corBase;
-        private String textoOriginal; // Guarda a letra ("R", "F", etc) para quando o loop parar
+        private String textoOriginal; 
         
         private boolean loopAtivado = false; 
         
@@ -363,15 +391,14 @@ public class LaunchpadAvancado extends JFrame {
             }
             setFont(new Font("SansSerif", Font.BOLD, 24));
 
-            // Configuração do "Motor" da animação (Roda a ~30 FPS)
             timerAnimacao = new Timer(30, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    anguloAnimacao += 15; // Gira 15 graus a cada quadro
+                    anguloAnimacao += 15; 
                     if (anguloAnimacao >= 360) {
                         anguloAnimacao -= 360;
                     }
-                    repaint(); // Manda a tela redesenhar o botão instantaneamente
+                    repaint(); 
                 }
             });
         }
@@ -383,12 +410,12 @@ public class LaunchpadAvancado extends JFrame {
         public void setLoopAtivado(boolean ativo) {
             this.loopAtivado = ativo;
             if (ativo) {
-                setText(""); // Esconde a letra do botão
-                timerAnimacao.start(); // Liga o motor de giro
+                setText(""); 
+                timerAnimacao.start(); 
             } else {
-                setText(textoOriginal); // Devolve a letra original ao botão
-                timerAnimacao.stop(); // Desliga o motor
-                anguloAnimacao = 0; // Zera a posição do giro
+                setText(textoOriginal); 
+                timerAnimacao.stop(); 
+                anguloAnimacao = 0; 
             }
             repaint(); 
         }
@@ -407,7 +434,6 @@ public class LaunchpadAvancado extends JFrame {
             
             boolean pressionado = getModel().isPressed() || loopAtivado;
 
-            // Fundo do botão fica branco gelo quando pressionado/ativo
             Color corCentro = pressionado ? Color.WHITE : corBase.brighter().brighter();
             Color corBorda = pressionado ? corBase : corBase.darker();
             int margem = pressionado ? 2 : 0;
@@ -420,24 +446,18 @@ public class LaunchpadAvancado extends JFrame {
             g2.setPaint(pinturaRadial);
             g2.fillRoundRect(margem, margem, width - (margem * 2), height - (margem * 2), 40, 40);
 
-            // ==========================================
             // DESENHA O SPINNER ANIMADO SE FOR LOOP
-            // ==========================================
             if (loopAtivado) {
                 int tamanhoSpinner = Math.min(width, height) / 3; 
                 int pos_X = (width - tamanhoSpinner) / 2;
                 int pos_Y = (height - tamanhoSpinner) / 2;
 
-                // Deixa a linha grossa e com pontas arredondadas
                 g2.setStroke(new BasicStroke(6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)); 
                 
-                // Desenha a "trilha" invisível no fundo (um círculo completo cinza bem claro/transparente)
                 g2.setColor(new Color(0, 0, 0, 30)); 
                 g2.drawOval(pos_X, pos_Y, tamanhoSpinner, tamanhoSpinner);
 
-                // Desenha o arco que gira (usando a cor original do botão para combinar)
                 g2.setColor(corBase); 
-                // Cria um arco de 200 graus que vai rodando usando o nosso anguloAnimacao negativo (sentido horário)
                 g2.drawArc(pos_X, pos_Y, tamanhoSpinner, tamanhoSpinner, -anguloAnimacao, 200); 
             }
 
