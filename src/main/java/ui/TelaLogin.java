@@ -14,7 +14,6 @@ import java.util.List;
 
 /**
  * Tela de Login / Identificação do Usuário.
- * Interface gráfica atualizada com botões separados para Login e Registro.
  */
 public class TelaLogin extends JFrame {
 
@@ -31,7 +30,7 @@ public class TelaLogin extends JFrame {
 
         getContentPane().setBackground(Color.decode("#1E1E24"));
 
-        // 2. CRIANDO A BARRA DE TÍTULO ESCURA CUSTOMIZADA
+        // 2. BARRA DE TÍTULO ESCURA
         JPanel barraTitulo = new JPanel(new BorderLayout());
         barraTitulo.setBackground(Color.decode("#121212"));
         barraTitulo.setPreferredSize(new Dimension(getWidth(), 35));
@@ -98,7 +97,7 @@ public class TelaLogin extends JFrame {
         ));
         painelForm.add(txtNome, gbc);
 
-        // Campo: R.A.
+        // Campo: R.A. com Placeholder
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.0;
@@ -110,49 +109,66 @@ public class TelaLogin extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.weightx = 1.0;
-        txtRa = new JTextField();
+        
+        txtRa = new JTextField("XX.XXXXX-X"); 
         txtRa.setFont(new Font("SansSerif", Font.PLAIN, 14));
         txtRa.setBackground(Color.decode("#2A2A35"));
-        txtRa.setForeground(Color.WHITE);
+        txtRa.setForeground(Color.GRAY); 
         txtRa.setCaretColor(Color.WHITE);
         txtRa.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.decode("#3A3A45"), 1),
                 BorderFactory.createEmptyBorder(6, 10, 6, 10)
         ));
+
+        // Controle de Foco (Placeholder visual)
+        txtRa.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (txtRa.getText().equals("XX.XXXXX-X")) {
+                    txtRa.setText("");
+                    txtRa.setForeground(Color.WHITE); 
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (txtRa.getText().isEmpty()) {
+                    txtRa.setForeground(Color.GRAY);
+                    txtRa.setText("XX.XXXXX-X");
+                }
+            }
+        });
+        
         painelForm.add(txtRa, gbc);
 
-        // ==========================================
-        // 4. PAINEL DE BOTÕES (LOGIN E REGISTRAR)
-        // ==========================================
+        // 4. PAINEL DE BOTÕES
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.weightx = 1.0;
         gbc.insets = new Insets(25, 10, 10, 10);
         
-        // Criamos um painel interno com 2 colunas para colocar os botões lado a lado
         JPanel painelBotoes = new JPanel(new GridLayout(1, 2, 15, 0));
         painelBotoes.setBackground(Color.decode("#1E1E24"));
 
-        // Botão REGISTRAR (Secundário)
+        // Botão REGISTRAR (Amarelo/Laranja Escuro)
         JButton btnRegistrar = new JButton("REGISTRAR");
         btnRegistrar.setFont(new Font("SansSerif", Font.BOLD, 14));
         btnRegistrar.setForeground(Color.BLACK);
-        btnRegistrar.setBackground(Color.decode("#f5b041")); // Cor cinza escuro
+        btnRegistrar.setBackground(Color.decode("#f5b041"));
         btnRegistrar.setFocusPainted(false);
         btnRegistrar.setBorderPainted(false);
         btnRegistrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btnRegistrar.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) { btnRegistrar.setBackground(Color.decode("#4A4A55")); }
-            public void mouseExited(MouseEvent evt) { btnRegistrar.setBackground(Color.decode("#3A3A45")); }
+            public void mouseEntered(MouseEvent evt) { btnRegistrar.setBackground(Color.decode("#e09e36")); }
+            public void mouseExited(MouseEvent evt) { btnRegistrar.setBackground(Color.decode("#f5b041")); }
         });
         btnRegistrar.addActionListener(e -> executarRegistro());
 
-        // Botão ENTRAR (Primário)
+        // Botão ENTRAR (Primário Ciano)
         JButton btnEntrar = new JButton("ENTRAR");
         btnEntrar.setFont(new Font("SansSerif", Font.BOLD, 14));
         btnEntrar.setForeground(Color.BLACK);
-        btnEntrar.setBackground(Color.decode("#06e2c5")); // Cor Ciano
+        btnEntrar.setBackground(Color.decode("#06e2c5")); 
         btnEntrar.setFocusPainted(false);
         btnEntrar.setBorderPainted(false);
         btnEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -163,7 +179,6 @@ public class TelaLogin extends JFrame {
         });
         btnEntrar.addActionListener(e -> executarLogin());
 
-        // Adiciona os botões no painel
         painelBotoes.add(btnRegistrar);
         painelBotoes.add(btnEntrar);
 
@@ -171,12 +186,14 @@ public class TelaLogin extends JFrame {
         add(painelForm, BorderLayout.CENTER);
     }
 
-    /**
-     * Tenta entrar com um usuário já existente.
-     */
     private void executarLogin() {
         String nome = txtNome.getText().trim();
         String ra = txtRa.getText().trim();
+
+        // Ignora a dica de Placeholder
+        if (ra.equals("XX.XXXXX-X")) {
+            ra = ""; 
+        }
 
         if (nome.isEmpty() || ra.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos.", "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -194,12 +211,14 @@ public class TelaLogin extends JFrame {
         abrirLaunchpad(usuario);
     }
 
-    /**
-     * Tenta cadastrar um novo usuário caso o R.A. não exista.
-     */
     private void executarRegistro() {
         String nome = txtNome.getText().trim();
         String ra = txtRa.getText().trim();
+
+        // Ignora a dica de Placeholder
+        if (ra.equals("XX.XXXXX-X")) {
+            ra = ""; 
+        }
 
         if (nome.isEmpty() || ra.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos para se registrar.", "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -222,9 +241,6 @@ public class TelaLogin extends JFrame {
         abrirLaunchpad(novoUsuario);
     }
 
-    /**
-     * Centraliza a abertura da tela principal para não repetir código.
-     */
     private void abrirLaunchpad(Usuario usuario) {
         List<Preset> presets = Presets.carregarPresetsPadrao();
         Preset presetInicial = presets.get(0);
@@ -240,7 +256,6 @@ public class TelaLogin extends JFrame {
         });
     }
 
-    // Subclasse para permitir arrastar a janela customizada
     class MoverJanela extends MouseAdapter {
         private Point clickInicial;
         private JFrame janela;

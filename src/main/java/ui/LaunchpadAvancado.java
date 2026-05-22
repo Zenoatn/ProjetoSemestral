@@ -14,8 +14,8 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Interface gráfica principal do Launchpad com suporte a CRUD completo via nuvem,
- * sistema de Looper com animação, e integração de Mouse/Teclado.
+ * Interface gráfica principal do Launchpad.
+ * Suporta CRUD completo na nuvem, Loops exclusivos animados e integração Mouse/Teclado.
  */
 public class LaunchpadAvancado extends JFrame {
 
@@ -24,18 +24,18 @@ public class LaunchpadAvancado extends JFrame {
     private DrumKit meuDrumKit;
     private List<Preset> presetsUsuario;
     
-    // Lista para rastrear todos os pads e conseguir apagar as luzes do Loop
+    // Lista para rastrear todos os pads e controlar a exclusividade dos loops
     private List<PadLuminoso> listaDePads;
     
     // Controle de estado da interface e do CRUD
     private boolean emModoEdicao = false;
-    private Preset presetAtivo = null; // Controla qual preset da nuvem está carregado
+    private Preset presetAtivo = null; 
     private JButton btnPreset;
     private JLabel titulo;
     private JPopupMenu menuPresets;
 
     /**
-     * Construtor da janela do Launchpad.
+     * Construtor da janela principal.
      */
     public LaunchpadAvancado(Usuario usuario, DrumKit kit) {
         this.usuarioLogado = usuario;
@@ -43,12 +43,12 @@ public class LaunchpadAvancado extends JFrame {
         
         listaDePads = new java.util.ArrayList<>();
 
-        // Lista mutável para aceitar inserções e remoções dinâmicas do banco
+        // Lista mutável com presets padrão
         presetsUsuario = new java.util.ArrayList<>(
             Presets.carregarPresetsPadrao().subList(1, Presets.carregarPresetsPadrao().size())
         );
 
-        // BUSCA AUTOMÁTICA DE PRESETS NA NUVEM DA AIVEN ATRAVÉS DO RA DO UTILIZADOR
+        // Busca automática na nuvem
         Database.PresetDAO presetDAO = new Database.PresetDAO();
         List<Preset> presetsBanco = presetDAO.buscarPresetsDoUsuario(usuarioLogado);
         presetsUsuario.addAll(presetsBanco); 
@@ -61,7 +61,7 @@ public class LaunchpadAvancado extends JFrame {
         setUndecorated(true); 
         getContentPane().setBackground(Color.decode("#1E1E24")); 
 
-        // 2. CRIANDO A BARRA DE TÍTULO ESCURA CUSTOMIZADA
+        // 2. BARRA DE TÍTULO
         JPanel barraTitulo = new JPanel(new BorderLayout());
         barraTitulo.setBackground(Color.decode("#121212"));
         barraTitulo.setPreferredSize(new Dimension(getWidth(), 35));
@@ -78,7 +78,7 @@ public class LaunchpadAvancado extends JFrame {
         btnFechar.setForeground(Color.GRAY);
         btnFechar.setFont(new Font("SansSerif", Font.BOLD, 16));
         btnFechar.addActionListener(e -> {
-            desligarLoops(); // Segurança: corta o som antes de fechar o app
+            desligarLoops(); 
             System.exit(0);
         });
         
@@ -100,7 +100,7 @@ public class LaunchpadAvancado extends JFrame {
 
         add(barraTitulo, BorderLayout.NORTH);
 
-        // 3. CRIANDO OS DRUM PADS (TECLADO 3x4)
+        // 3. DRUM PADS
         JPanel painelPad = new JPanel(new GridLayout(3, 4, 20, 20)); 
         painelPad.setBackground(Color.decode("#1E1E24"));
         painelPad.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
@@ -126,12 +126,12 @@ public class LaunchpadAvancado extends JFrame {
             PadLuminoso pad = new PadLuminoso(Color.decode(coresHex[i]), nomesTeclas[i]);
             configurarInteracoesPad(pad, codigosTeclas[i]);
             painelPad.add(pad);
-            listaDePads.add(pad); // Registra o pad na nossa lista
+            listaDePads.add(pad); 
         }
 
         add(painelPad, BorderLayout.CENTER);
 
-        // 4. CRIANDO O RODAPÉ (SISTEMA DE PRESETS)
+        // 4. RODAPÉ (SISTEMA DE PRESETS)
         JPanel painelRodape = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         painelRodape.setBackground(Color.decode("#121212"));
 
@@ -180,26 +180,47 @@ public class LaunchpadAvancado extends JFrame {
         btnPreset.setForeground(Color.BLACK);
     }
 
+    private void restaurarVisualPadrao() {
+        titulo.setText("   Launchpad Customizável - Usuário: " + usuarioLogado.getNome());
+        titulo.setForeground(Color.LIGHT_GRAY);
+        btnPreset.setText("Presets ▾");
+        btnPreset.setBackground(Color.decode("#2A2A35"));
+        btnPreset.setForeground(Color.LIGHT_GRAY);
+    }
+
     private void salvarPreset() {
-        String nomePreset = JOptionPane.showInputDialog(this, "Digite o nome para o seu novo Preset:", "Salvar Preset", JOptionPane.PLAIN_MESSAGE);
-        
-        if (nomePreset != null && !nomePreset.trim().isEmpty()) {
-            Preset novoPreset = new Preset(nomePreset, usuarioLogado, meuDrumKit);
-            Database.PresetDAO dao = new Database.PresetDAO();
-            dao.salvar(novoPreset);
+        // Se já existe um preset ativo, vamos EDITAR os sons na nuvem
+        if (presetAtivo != null && presetAtivo.getPresetId() > 0) {
             
-            this.presetAtivo = novoPreset;
-            presetsUsuario.add(novoPreset);
-            carregarMenuPresets(); 
+            int confirm = JOptionPane.showConfirmDialog(this, "Deseja salvar as alterações nos sons deste preset?", "Confirmar Edição", JOptionPane.YES_NO_OPTION);
             
-            JOptionPane.showMessageDialog(this, "Preset '" + nomePreset + "' salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                Database.PresetDAO dao = new Database.PresetDAO();
+                dao.atualizarSons(presetAtivo.getPresetId(), meuDrumKit);
+                
+                JOptionPane.showMessageDialog(this, "Preset '" + presetAtivo.getNome() + "' atualizado com sucesso!");
+                emModoEdicao = false;
+                restaurarVisualPadrao();
+            }
             
-            emModoEdicao = false;
-            titulo.setText("   Launchpad Customizável - Usuário: " + usuarioLogado.getNome());
-            titulo.setForeground(Color.LIGHT_GRAY);
-            btnPreset.setText("Presets ▾");
-            btnPreset.setBackground(Color.decode("#2A2A35"));
-            btnPreset.setForeground(Color.LIGHT_GRAY);
+        } else {
+            // Se não, vamos CRIAR um novo preset
+            String nomePreset = JOptionPane.showInputDialog(this, "Digite o nome para o seu novo Preset:", "Salvar Preset", JOptionPane.PLAIN_MESSAGE);
+            
+            if (nomePreset != null && !nomePreset.trim().isEmpty()) {
+                Preset novoPreset = new Preset(nomePreset, usuarioLogado, meuDrumKit);
+                Database.PresetDAO dao = new Database.PresetDAO();
+                dao.salvar(novoPreset);
+                
+                this.presetAtivo = novoPreset;
+                presetsUsuario.add(novoPreset);
+                carregarMenuPresets(); 
+                
+                JOptionPane.showMessageDialog(this, "Preset '" + nomePreset + "' salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                
+                emModoEdicao = false;
+                restaurarVisualPadrao();
+            }
         }
     }
 
@@ -251,7 +272,19 @@ public class LaunchpadAvancado extends JFrame {
         }
         menuPresets.addSeparator();
 
+        // Menu de Edição para Presets da Nuvem
         if (presetAtivo != null && presetAtivo.getPresetId() > 0) {
+            JMenuItem itemEditarSons = new JMenuItem("🎧 Editar Sons deste Preset");
+            itemEditarSons.addActionListener(e -> {
+                emModoEdicao = true;
+                titulo.setText("   Launchpad Customizável - [EDITANDO: " + presetAtivo.getNome() + "]");
+                titulo.setForeground(Color.decode("#f5b041")); 
+                btnPreset.setText("💾 Salvar Alterações");
+                btnPreset.setBackground(Color.decode("#00CC66"));
+                btnPreset.setForeground(Color.BLACK);
+            });
+            menuPresets.add(itemEditarSons);
+
             JMenuItem itemRenomear = new JMenuItem("✏️ Renomear Preset Atual");
             itemRenomear.addActionListener(e -> renomearPresetAtivo());
             menuPresets.add(itemRenomear);
@@ -259,6 +292,7 @@ public class LaunchpadAvancado extends JFrame {
             JMenuItem itemEliminar = new JMenuItem("🗑️ Eliminar Preset Atual");
             itemEliminar.addActionListener(e -> eliminarPresetAtivo());
             menuPresets.add(itemEliminar);
+            
             menuPresets.addSeparator();
         }
 
@@ -268,9 +302,7 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     private void configurarInteracoesPad(PadLuminoso pad, int keyCode) {
-        // ==========================================
-        // 1. INTERAÇÃO PELO TECLADO
-        // ==========================================
+        // Interação Teclado
         InputMap im = pad.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = pad.getActionMap();
 
@@ -295,15 +327,12 @@ public class LaunchpadAvancado extends JFrame {
             }
         });
 
-        // ==========================================
-        // 2. INTERAÇÃO PELO MOUSE
-        // ==========================================
+        // Interação Mouse
         pad.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 executarAcaoPressionar(pad);
             }
-
             @Override
             public void mouseReleased(MouseEvent e) {
                 executarAcaoSoltar(pad);
@@ -311,9 +340,6 @@ public class LaunchpadAvancado extends JFrame {
         });
     }
 
-   /**
-     * Lógica centralizada: O que acontece quando o botão afunda (Teclado ou Mouse)
-     */
     private void executarAcaoPressionar(PadLuminoso padLum) {
         String nomeRealDaTecla = padLum.getTextoOriginal();
 
@@ -333,35 +359,26 @@ public class LaunchpadAvancado extends JFrame {
         } else {
             String caminhoSom = meuDrumKit.obterCaminhoSom(nomeRealDaTecla);
             
+            // Loop Exclusivo (R, F, V)
             if (nomeRealDaTecla.equals("R") || nomeRealDaTecla.equals("F") || nomeRealDaTecla.equals("V")) {
                 if (padLum.isLoopAtivado()) {
-                    // Se ele mesmo já estava tocando, apenas desliga e para o som
                     padLum.setLoopAtivado(false);
                     AudioPlayer.pararLoop(nomeRealDaTecla); 
                 } else {
-                    // =======================================================
-                    // NOVO: Exclusividade de Loop
-                    // Antes de ligar este, desliga todos os áudios e animações
-                    // =======================================================
+                    // Desliga todos os outros antes de iniciar este
                     AudioPlayer.pararTodosOsLoops(); 
                     for (PadLuminoso p : listaDePads) {
                         p.setLoopAtivado(false);
                     }
-                    
-                    // Agora sim, liga apenas o que acabou de ser clicado
                     padLum.setLoopAtivado(true);
                     AudioPlayer.iniciarLoop(caminhoSom, nomeRealDaTecla); 
                 }
             } else {
-                // LÓGICA DO TRIGGER (outras teclas): Toca 1x normal por cima do loop
                 AudioPlayer.tocarSom(caminhoSom);
             }
         }
     }
 
-    /**
-     * Lógica centralizada: O que acontece quando o botão sobe (Teclado ou Mouse)
-     */
     private void executarAcaoSoltar(PadLuminoso padLum) {
         if (!emModoEdicao) {
             padLum.getModel().setArmed(false);
@@ -370,19 +387,17 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Ponto de entrada oficial movido para o TelaLogin.java
+        // Ponto de entrada via TelaLogin
     }
 
     // =========================================================
-    // SUBCLASSE: PADS LUMINOSOS COM ANIMAÇÃO DE LOOP (SPINNER)
+    // SUBCLASSE: PADS LUMINOSOS COM ANIMAÇÃO DE SPINNER
     // =========================================================
     class PadLuminoso extends JButton {
         private Color corBase;
         private String textoOriginal; 
-        
         private boolean loopAtivado = false; 
         
-        // Atributos da Animação
         private Timer timerAnimacao;
         private int anguloAnimacao = 0;
 
@@ -458,7 +473,6 @@ public class LaunchpadAvancado extends JFrame {
             g2.setPaint(pinturaRadial);
             g2.fillRoundRect(margem, margem, width - (margem * 2), height - (margem * 2), 40, 40);
 
-            // DESENHA O SPINNER ANIMADO SE FOR LOOP
             if (loopAtivado) {
                 int tamanhoSpinner = Math.min(width, height) / 3; 
                 int pos_X = (width - tamanhoSpinner) / 2;
@@ -479,7 +493,7 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     // =========================================================
-    // SUBCLASSE INTERNA: PERMITE ARRASTAR A JANELA SEM BORDA
+    // SUBCLASSE INTERNA: PERMITE ARRASTAR A JANELA
     // =========================================================
     class MoverJanela extends MouseAdapter {
         private Point clickInicial;

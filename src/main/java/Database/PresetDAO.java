@@ -119,24 +119,53 @@ public class PresetDAO {
     }
 
     /**
+     * [UPDATE] Limpa os sons antigos de um preset e grava a nova configuração.
+     */
+    public void atualizarSons(int idPreset, Model.DrumKit kit) {
+        String sqlDelete = "DELETE FROM preset_sons WHERE preset_id = ?";
+        String sqlInsert = "INSERT INTO preset_sons (preset_id, tecla, caminho_audio) VALUES (?, ?, ?)";
+
+        try (Connection conn = Conexao.getConnection()) {
+            // 1. Limpa tudo o que existia antes para este preset
+            try (PreparedStatement stmtDel = conn.prepareStatement(sqlDelete)) {
+                stmtDel.setInt(1, idPreset);
+                stmtDel.executeUpdate();
+            }
+
+            // 2. Grava a nova configuração atual do DrumKit
+            try (PreparedStatement stmtIns = conn.prepareStatement(sqlInsert)) {
+                Map<String, String> sons = kit.getTodosOsSons();
+                for (Map.Entry<String, String> entry : sons.entrySet()) {
+                    String caminho = entry.getValue();
+                    if (caminho != null && !caminho.trim().isEmpty()) {
+                        stmtIns.setInt(1, idPreset);
+                        stmtIns.setString(2, entry.getKey());
+                        stmtIns.setString(3, caminho);
+                        stmtIns.executeUpdate();
+                    }
+                }
+            }
+            System.out.println("Sons do preset atualizados na nuvem!");
+        } catch (SQLException e) {
+            System.err.println("Erro ao atualizar sons: " + e.getMessage());
+        }
+    }
+
+    /**
      * [DELETE] Elimina um preset da nuvem de forma definitiva.
      * Realiza a exclusão em cascata manual: primeiro apaga os sons, depois o preset.
      */
     public void eliminar(int idPreset) {
-        // 1. Comando para apagar os "filhos"
         String sqlSons = "DELETE FROM preset_sons WHERE preset_id = ?";
-        // 2. Comando para apagar o "pai"
         String sqlPreset = "DELETE FROM presets WHERE preset_id = ?";
 
         try (Connection conn = Conexao.getConnection()) {
             
-            // Primeiro: Limpa os sons associados a este preset
             try (PreparedStatement stmtSons = conn.prepareStatement(sqlSons)) {
                 stmtSons.setInt(1, idPreset);
                 stmtSons.executeUpdate();
             }
 
-            // Segundo: Agora que os filhos sumiram, o MySQL permite apagar o preset
             try (PreparedStatement stmtPreset = conn.prepareStatement(sqlPreset)) {
                 stmtPreset.setInt(1, idPreset);
                 stmtPreset.executeUpdate();
