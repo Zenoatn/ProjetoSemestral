@@ -14,23 +14,20 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Interface gráfica principal do Launchpad.
- * Desenvolvida exclusivamente em Java, sem uso de geradores gráficos automáticos.
+ * Interface gráfica principal do Launchpad com suporte a CRUD completo via nuvem.
  */
 public class LaunchpadAvancado extends JFrame {
 
     // Atributos para controle de dados
     private Usuario usuarioLogado;
     private DrumKit meuDrumKit;
-
     private List<Preset> presetsUsuario;
     
-    // Controle de estado da interface
+    // Controle de estado da interface e do CRUD
     private boolean emModoEdicao = false;
+    private Preset presetAtivo = null; // Controla qual preset da nuvem está carregado
     private JButton btnPreset;
     private JLabel titulo;
-    
-    // O menu é um atributo da classe para podermos adicionar itens nele dinamicamente
     private JPopupMenu menuPresets;
 
     /**
@@ -40,18 +37,15 @@ public class LaunchpadAvancado extends JFrame {
         this.usuarioLogado = usuario;
         this.meuDrumKit = kit;
 
-        // Convertido para ArrayList mutável para evitar erros de UnsupportedOperationException ao adicionar itens do banco
+        // Lista mutável para aceitar inserções e remoções dinâmicas do banco
         presetsUsuario = new java.util.ArrayList<>(
             Presets.carregarPresetsPadrao().subList(1, Presets.carregarPresetsPadrao().size())
         );
 
-        // =======================================================================
-        // BUSCA AUTOMÁTICA DE PRESETS NA NUVEM DA AIVEN
-        // =======================================================================
+        // BUSCA AUTOMÁTICA DE PRESETS NA NUVEM DA AIVEN ATRAVÉS DO RA DO UTILIZADOR
         Database.PresetDAO presetDAO = new Database.PresetDAO();
         List<Preset> presetsBanco = presetDAO.buscarPresetsDoUsuario(usuarioLogado);
         presetsUsuario.addAll(presetsBanco); 
-        // =======================================================================
 
         // 1. CONFIGURAÇÕES DA JANELA
         setSize(800, 650);
@@ -154,6 +148,7 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     private void ativarModoEdicao() {
+        this.presetAtivo = null; // Reseta o preset selecionado já que iniciou uma nova criação
         emModoEdicao = true;
         meuDrumKit = new DrumKit();
         titulo.setText("   Launchpad Customizável - [CRIANDO NOVO PRESET]");
@@ -171,19 +166,14 @@ public class LaunchpadAvancado extends JFrame {
             
             Preset novoPreset = new Preset(nomePreset, usuarioLogado, meuDrumKit);
             
-            // ==========================================
             // GRAVAÇÃO DO PRESET DIRETO NA NUVEM DA AIVEN
-            // ==========================================
             Database.PresetDAO dao = new Database.PresetDAO();
             dao.salvar(novoPreset);
-            // ==========================================
-
+            
+            this.presetAtivo = novoPreset; // O preset recém criado torna-se o ativo
             presetsUsuario.add(novoPreset);
 
-            // Adiciona o preset recém-criado na lista suspensa visualmente
-            JMenuItem novoItem = new JMenuItem(nomePreset);
-            novoItem.addActionListener(e -> { carregarPreset(novoPreset); });
-            menuPresets.insert(novoItem, 0); // Insere no topo da lista customizada
+            carregarMenuPresets(); // Recarrega as opções dinâmicas
             
             JOptionPane.showMessageDialog(this, "Preset '" + nomePreset + "' salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             
@@ -199,14 +189,52 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     private void carregarPreset(Preset preset){
+        this.presetAtivo = preset; // Atualiza o controle global de seleção
         meuDrumKit = preset.getKit();
+        carregarMenuPresets(); // Força o menu a desenhar os botões de Renomear e Eliminar
         JOptionPane.showMessageDialog(this, "Preset '" + preset.getNome() + "' carregado com sucesso!");
+    }
+
+    private void renomearPresetAtivo() {
+        if (presetAtivo == null) return;
+        
+        String novoNome = JOptionPane.showInputDialog(this, "Introduza o novo nome para o preset:", presetAtivo.getNome());
+        
+        if (novoNome != null && !novoNome.trim().isEmpty()) {
+            Database.PresetDAO dao = new Database.PresetDAO();
+            dao.atualizarNome(presetAtivo.getPresetId(), novoNome);
+            
+            presetAtivo.setNome(novoNome); // Sincroniza na memória RAM
+            carregarMenuPresets(); // Atualiza a renderização do menu
+            
+            JOptionPane.showMessageDialog(this, "Preset renomeado com sucesso!");
+        }
+    }
+
+    private void eliminarPresetAtivo() {
+        if (presetAtivo == null) return;
+        
+        int resposta = JOptionPane.showConfirmDialog(this, 
+                "Tem a certeza que deseja eliminar o preset '" + presetAtivo.getNome() + "'?", 
+                "Confirmar Eliminação", JOptionPane.YES_NO_OPTION);
+                
+        if (resposta == JOptionPane.YES_OPTION) {
+            Database.PresetDAO dao = new Database.PresetDAO();
+            dao.eliminar(presetAtivo.getPresetId());
+            
+            presetsUsuario.remove(presetAtivo); // Limpa da RAM
+            presetAtivo = null;
+            meuDrumKit = new DrumKit(); // Esvazia o mapeamento de sons atual dos botões
+            
+            carregarMenuPresets(); 
+            JOptionPane.showMessageDialog(this, "Preset eliminado com sucesso!");
+        }
     }
 
     private void carregarMenuPresets() {
         menuPresets.removeAll();
 
-        // Lista dinamicamente todos os presets carregados (Padrões + Nuvem)
+        // Renderiza os nomes de todos os itens disponíveis
         for(Preset p : presetsUsuario) {
             JMenuItem item = new JMenuItem(p.getNome());
             item.addActionListener(e -> { carregarPreset(p); });
@@ -215,7 +243,20 @@ public class LaunchpadAvancado extends JFrame {
 
         menuPresets.addSeparator();
 
-        // Opção para ativar o mapeamento de um novo kit
+        // INJEÇÃO DO UPDATE E DELETE CASO O PRESET ATIVO SEJA UM ELEMENTO DA NUVEM (ID > 0)
+        if (presetAtivo != null && presetAtivo.getPresetId() > 0) {
+            JMenuItem itemRenomear = new JMenuItem("✏️ Renomear Preset Atual");
+            itemRenomear.addActionListener(e -> renomearPresetAtivo());
+            menuPresets.add(itemRenomear);
+
+            JMenuItem itemEliminar = new JMenuItem("🗑️ Eliminar Preset Atual");
+            itemEliminar.addActionListener(e -> eliminarPresetAtivo());
+            menuPresets.add(itemEliminar);
+            
+            menuPresets.addSeparator();
+        }
+
+        // Opção padrão para ativar o mapeamento de um novo kit
         JMenuItem itemNovo = new JMenuItem("Criar Novo Preset...");
         itemNovo.addActionListener(e -> ativarModoEdicao());
         menuPresets.add(itemNovo);
@@ -271,7 +312,7 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Ponto de entrada movido para o TelaLogin.java
+        // Ponto de entrada oficial movido para o TelaLogin.java
     }
 
     // =========================================================
