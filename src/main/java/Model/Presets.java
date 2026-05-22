@@ -1,5 +1,6 @@
 package Model;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,18 +34,18 @@ public class Presets {
 
         DrumKit trapKit = new DrumKit();
 
-        trapKit.associarSom("Q", "Assets/DrumKits/Kick Dminor.wav");
-        trapKit.associarSom("W", null);
-        trapKit.associarSom("E", null);
-        trapKit.associarSom("R", null);
-        trapKit.associarSom("A", null);
-        trapKit.associarSom("S", null);
-        trapKit.associarSom("D", null);
-        trapKit.associarSom("F", null);
-        trapKit.associarSom("Z", null);
-        trapKit.associarSom("X", null);
-        trapKit.associarSom("C", null);
-        trapKit.associarSom("V", null);
+        trapKit.associarSom("Q", new File("Assets/DrumKits/Kick/Kick - Drake.wav").getAbsolutePath());
+        trapKit.associarSom("W", new File("Assets/DrumKits/Clap Snaps/Clap - Metro.wav").getAbsolutePath());
+        trapKit.associarSom("E", new File("Assets/DrumKits/Hihat/hihatglock.wav").getAbsolutePath());
+        trapKit.associarSom("R", new File("Assets/DrumKits/Loops/loop_gut.wav").getAbsolutePath());
+        trapKit.associarSom("A", new File("Assets/DrumKits/Open hat/OH - Wheezy Outta Here.wav").getAbsolutePath());
+        trapKit.associarSom("S", new File("Assets/DrumKits/Snare/snaremusthave.wav").getAbsolutePath());
+        trapKit.associarSom("D", new File("Assets/DrumKits/Hihat/hihatlove.wav").getAbsolutePath());
+        trapKit.associarSom("F", new File("Assets/DrumKits/Loops/loop_hff.wav").getAbsolutePath());
+        trapKit.associarSom("Z", new File("Assets/DrumKits/Percs/percmain.wav").getAbsolutePath());
+        trapKit.associarSom("X", new File("Assets/DrumKits/Percs/perccow.wav").getAbsolutePath());
+        trapKit.associarSom("C", new File("Assets/DrumKits/Percs/Shawty Redd.wav").getAbsolutePath());
+        trapKit.associarSom("V", new File("Assets/DrumKits/Loops/loop_rlx.wav").getAbsolutePath());
 
         Preset trap = new Preset(1, "Trap", sistema, trapKit);
 
@@ -52,17 +53,17 @@ public class Presets {
 
         DrumKit lofiKit = new DrumKit();
 
-        lofiKit.associarSom("Q", null);
-        lofiKit.associarSom("W", null);
-        lofiKit.associarSom("E", null);
-        lofiKit.associarSom("R", null);
-        lofiKit.associarSom("A", null);
-        lofiKit.associarSom("S", null);
-        lofiKit.associarSom("D", null);
-        lofiKit.associarSom("F", null);
-        lofiKit.associarSom("Z", null);
-        lofiKit.associarSom("X", null);
-        lofiKit.associarSom("C", null);
+        lofiKit.associarSom("Q", new File("Assets/DrumKits/Kick/CG_Kick (11).wav").getAbsolutePath());
+        lofiKit.associarSom("W", new File("Assets/DrumKits/Clap Snaps/clapsnap5.wav").getAbsolutePath());
+        lofiKit.associarSom("E", new File("Assets/DrumKits/Hihat/Hi-Hat LoFi.wav").getAbsolutePath());
+        lofiKit.associarSom("R", new File("Assets/DrumKits/Loops/loop_hch.wav").getAbsolutePath());
+        lofiKit.associarSom("A", new File("Assets/DrumKits/Open hat/OH - Goat.wav").getAbsolutePath());
+        lofiKit.associarSom("S", new File("Assets/DrumKits/Snare/CG_Snare (22).wav").getAbsolutePath());
+        lofiKit.associarSom("D", new File("Assets/DrumKits/Hihat/hihatzay.wav").getAbsolutePath());
+        lofiKit.associarSom("F", new File("Assets/DrumKits/Loops/loop_njz.wav").getAbsolutePath());
+        lofiKit.associarSom("Z", new File("Assets/DrumKits/Percs/Perc - Ting.wav").getAbsolutePath());
+        lofiKit.associarSom("X", new File("Assets/DrumKits/Percs/Perc - Sosa Triangle.wav").getAbsolutePath());
+        lofiKit.associarSom("C", new File("Assets/DrumKits/Percs/percxirx.wav").getAbsolutePath());
         lofiKit.associarSom("V", null);
 
         Preset lofi = new Preset(2, "LoFi", sistema, lofiKit);

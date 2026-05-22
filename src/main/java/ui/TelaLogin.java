@@ -101,7 +101,7 @@ public class TelaLogin extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.0;
-        JLabel lblRa = new JLabel("R.A. (Registro Acadêmico):");
+        JLabel lblRa = new JLabel("RA (XX.XXXXX-X):");
         lblRa.setForeground(Color.LIGHT_GRAY);
         lblRa.setFont(new Font("SansSerif", Font.BOLD, 14));
         painelForm.add(lblRa, gbc);
