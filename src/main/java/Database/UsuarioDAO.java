@@ -7,28 +7,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Classe responsável por realizar as operações de banco de dados
- * para a entidade Usuario.
+ * Classe responsável por realizar as operações de banco de dados para a entidade Usuario.
  */
 public class UsuarioDAO {
 
     /**
-     * Busca um usuário pelo RA. Se não existir, cadastra um novo automaticamente.
+     * Busca um usuário pelo RA. Retorna o usuário se achar, ou null se não existir.
      */
-    public Usuario buscarOuCriar(String ra, String nome) {
-        Usuario usuario = buscarPorRa(ra);
-
-        if (usuario == null) {
-            usuario = new Usuario(ra, nome);
-            inserir(usuario);
-        } else {
-            System.out.println("Usuário encontrado no banco: " + usuario.getNome());
-        }
-
-        return usuario;
-    }
-
-    private Usuario buscarPorRa(String ra) {
+    public Usuario buscarPorRa(String ra) {
         String sql = "SELECT ra, nome FROM usuario WHERE ra = ?";
         Usuario usuario = null;
 
@@ -49,7 +35,10 @@ public class UsuarioDAO {
         return usuario;
     }
 
-    private void inserir(Usuario usuario) {
+    /**
+     * Insere um novo usuário no banco de dados.
+     */
+    public void inserir(Usuario usuario) {
         String sql = "INSERT INTO usuario (ra, nome) VALUES (?, ?)";
 
         try (Connection conn = Conexao.getConnection();

@@ -311,7 +311,7 @@ public class LaunchpadAvancado extends JFrame {
         });
     }
 
-    /**
+   /**
      * Lógica centralizada: O que acontece quando o botão afunda (Teclado ou Mouse)
      */
     private void executarAcaoPressionar(PadLuminoso padLum) {
@@ -335,13 +335,25 @@ public class LaunchpadAvancado extends JFrame {
             
             if (nomeRealDaTecla.equals("R") || nomeRealDaTecla.equals("F") || nomeRealDaTecla.equals("V")) {
                 if (padLum.isLoopAtivado()) {
+                    // Se ele mesmo já estava tocando, apenas desliga e para o som
                     padLum.setLoopAtivado(false);
                     AudioPlayer.pararLoop(nomeRealDaTecla); 
                 } else {
+                    // =======================================================
+                    // NOVO: Exclusividade de Loop
+                    // Antes de ligar este, desliga todos os áudios e animações
+                    // =======================================================
+                    AudioPlayer.pararTodosOsLoops(); 
+                    for (PadLuminoso p : listaDePads) {
+                        p.setLoopAtivado(false);
+                    }
+                    
+                    // Agora sim, liga apenas o que acabou de ser clicado
                     padLum.setLoopAtivado(true);
                     AudioPlayer.iniciarLoop(caminhoSom, nomeRealDaTecla); 
                 }
             } else {
+                // LÓGICA DO TRIGGER (outras teclas): Toca 1x normal por cima do loop
                 AudioPlayer.tocarSom(caminhoSom);
             }
         }
