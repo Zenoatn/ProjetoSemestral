@@ -58,13 +58,9 @@ public class UsuarioDAO {
         }
     }
 
-    
-    public ArrayList<Integer> eliminar(Usuario usuario) {
-
+    public ArrayList<Integer> buscaPresetsUsuario(Usuario usuario){
         String sqlSelectPresets = "SELECT preset_id FROM presets WHERE usuario_ra = ?";
-        String sqlDelete = "DELETE FROM usuario WHERE ra = ?";
         ArrayList<Integer> presetsUsuario = new ArrayList<>();
-
 
         try (Connection conn = Conexao.getConnection()) {
             
@@ -76,18 +72,33 @@ public class UsuarioDAO {
                     }
                 }
             }
+
+        }catch (SQLException e) {
+            System.err.println("Erro ao buscar os preset: " + e.getMessage());
+            presetsUsuario.clear();
+        }
+
+        return presetsUsuario;
+    }
+
+    
+    public void eliminar(Usuario usuario) {
+        String sqlDelete = "DELETE FROM usuario WHERE ra = ?";
+
+        try (Connection conn = Conexao.getConnection()) {
+            
+        
             try (PreparedStatement stmtPreset = conn.prepareStatement(sqlDelete)) {
                 stmtPreset.setString(1, usuario.getRa());
                 stmtPreset.executeUpdate();
+                System.out.println("Usuário deletado");
             }   
 
 
         } catch (SQLException e) {
             System.err.println("Erro ao eliminar o preset: " + e.getMessage());
-            presetsUsuario = null;
         }
 
-        return presetsUsuario;
     }
         
 }

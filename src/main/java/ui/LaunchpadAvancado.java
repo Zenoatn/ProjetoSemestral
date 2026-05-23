@@ -13,6 +13,7 @@ import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Interface gráfica principal do Launchpad.
@@ -178,7 +179,7 @@ public class LaunchpadAvancado extends JFrame {
         });
 
         painelRodape.add(btnPreset);
-        painelRodape.add(btnExcluirConta);
+        painelRodape.add(btnExlcuirUsuario);
         add(painelRodape, BorderLayout.SOUTH);
     }
 
@@ -295,12 +296,16 @@ public class LaunchpadAvancado extends JFrame {
         if (resposta == JOptionPane.YES_OPTION){
             desligarLoops();
             Database.UsuarioDAO usuarioDAO = new Database.UsuarioDAO();
-            List<Integer> presetsUsuarioDelete = usuarioDAO.eliminar(usuarioLogado);
+            List<Integer> presetsUsuarioDelete = new ArrayList<>(usuarioDAO.buscaPresetsUsuario(usuarioLogado));
             Database.PresetDAO presetDAO = new Database.PresetDAO();
 
             for(int i = 0; i < presetsUsuarioDelete.size(); i++){
                 presetDAO.eliminar(presetsUsuarioDelete.get(i));
             }
+            usuarioDAO.eliminar(usuarioLogado);
+            dispose();
+
+            new TelaLogin().setVisible(true);
         }
     }
 
