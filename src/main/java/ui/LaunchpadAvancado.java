@@ -5,6 +5,7 @@ import Model.DrumKit;
 import Model.Preset;
 import Model.Presets;
 import Audio.AudioPlayer;
+import Database.PresetDAO;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +32,7 @@ public class LaunchpadAvancado extends JFrame {
     private boolean emModoEdicao = false;
     private Preset presetAtivo = null; 
     private JButton btnPreset;
+    private JButton btnExcluirConta;
     private JLabel titulo;
     private JPopupMenu menuPresets;
 
@@ -141,6 +143,28 @@ public class LaunchpadAvancado extends JFrame {
         btnPreset.setBackground(Color.decode("#2A2A35")); 
         btnPreset.setFocusPainted(false);
         btnPreset.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        JButton btnExlcuirUsuario = new JButton("Excluir conta");
+        btnExlcuirUsuario.setFont(new Font("SansSerif", Font.BOLD, 14));
+        btnExlcuirUsuario.setForeground(Color.WHITE);
+        btnExlcuirUsuario.setBackground(Color.decode("#CC3333"));
+        btnExlcuirUsuario.setFocusPainted(false);
+        btnExlcuirUsuario.setBorderPainted(false);
+
+        btnExlcuirUsuario.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btnExlcuirUsuario.addMouseListener(new MouseAdapter(){
+            public void mouseEntered(MouseEvent evt){
+                btnExlcuirUsuario.setBackground(Color.decode("#AA2222"));
+            }
+            public void mouseExited(MouseEvent evt){
+                btnExlcuirUsuario.setBackground(Color.decode("#CC3333"));
+            }
+        });
+
+        btnExlcuirUsuario.addActionListener(e -> eliminarUsuarioAtivo());
+
+
         
         menuPresets = new JPopupMenu();
         carregarMenuPresets();
@@ -154,6 +178,7 @@ public class LaunchpadAvancado extends JFrame {
         });
 
         painelRodape.add(btnPreset);
+        painelRodape.add(btnExcluirConta);
         add(painelRodape, BorderLayout.SOUTH);
     }
 
@@ -260,6 +285,22 @@ public class LaunchpadAvancado extends JFrame {
             meuDrumKit = new DrumKit(); 
             carregarMenuPresets(); 
             JOptionPane.showMessageDialog(this, "Preset eliminado com sucesso!");
+        }
+    }
+
+    private void eliminarUsuarioAtivo(){
+        int resposta = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja eliminar o usuario '" + usuarioLogado.getNome() + 
+            "' e todos seus presets?", "Confirmar Eliminação", JOptionPane.YES_NO_OPTION);
+
+        if (resposta == JOptionPane.YES_OPTION){
+            desligarLoops();
+            Database.UsuarioDAO usuarioDAO = new Database.UsuarioDAO();
+            List<Integer> presetsUsuarioDelete = usuarioDAO.eliminar(usuarioLogado);
+            Database.PresetDAO presetDAO = new Database.PresetDAO();
+
+            for(int i = 0; i < presetsUsuarioDelete.size(); i++){
+                presetDAO.eliminar(presetsUsuarioDelete.get(i));
+            }
         }
     }
 

@@ -1,10 +1,13 @@
 package Database;
 
+import Model.Preset;
 import Model.Usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Classe responsável por realizar as operações de banco de dados para a entidade Usuario.
@@ -54,4 +57,37 @@ public class UsuarioDAO {
             System.err.println("Erro ao cadastrar novo usuário: " + e.getMessage());
         }
     }
+
+    
+    public ArrayList<Integer> eliminar(Usuario usuario) {
+
+        String sqlSelectPresets = "SELECT preset_id FROM presets WHERE usuario_ra = ?";
+        String sqlDelete = "DELETE FROM usuario WHERE ra = ?";
+        ArrayList<Integer> presetsUsuario = new ArrayList<>();
+
+
+        try (Connection conn = Conexao.getConnection()) {
+            
+            try (PreparedStatement stm = conn.prepareStatement(sqlSelectPresets)) {
+                stm.setString(1, usuario.getRa());
+                try(ResultSet rs = stm.executeQuery();){
+                    while(rs.next()){
+                        presetsUsuario.add(rs.getInt("preset_id"));
+                    }
+                }
+            }
+            try (PreparedStatement stmtPreset = conn.prepareStatement(sqlDelete)) {
+                stmtPreset.setString(1, usuario.getRa());
+                stmtPreset.executeUpdate();
+            }   
+
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao eliminar o preset: " + e.getMessage());
+            presetsUsuario = null;
+        }
+
+        return presetsUsuario;
+    }
+        
 }
