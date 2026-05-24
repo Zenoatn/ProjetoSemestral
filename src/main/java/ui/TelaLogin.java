@@ -12,16 +12,18 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-/**
- * Tela de Login / Identificação do Usuário.
- */
+// ==========================================
+// TELA DE LOGIN E REGISTRO DE USUÁRIO
+// ==========================================
 public class TelaLogin extends JFrame {
 
     private JTextField txtNome;
     private JTextField txtRa;
 
     public TelaLogin() {
+        // ==========================================
         // 1. CONFIGURAÇÕES DA JANELA
+        // ==========================================
         setSize(450, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -30,7 +32,9 @@ public class TelaLogin extends JFrame {
 
         getContentPane().setBackground(Color.decode("#1E1E24"));
 
-        // 2. BARRA DE TÍTULO ESCURA
+        // ==========================================
+        // 2. BARRA DE TÍTULO CUSTOMIZADA
+        // ==========================================
         JPanel barraTitulo = new JPanel(new BorderLayout());
         barraTitulo.setBackground(Color.decode("#121212"));
         barraTitulo.setPreferredSize(new Dimension(getWidth(), 35));
@@ -40,6 +44,7 @@ public class TelaLogin extends JFrame {
         titulo.setFont(new Font("SansSerif", Font.BOLD, 14));
         barraTitulo.add(titulo, BorderLayout.WEST);
 
+        // Botão Fechar
         JButton btnFechar = new JButton("X");
         btnFechar.setFocusPainted(false);
         btnFechar.setBorderPainted(false);
@@ -60,13 +65,16 @@ public class TelaLogin extends JFrame {
         });
         barraTitulo.add(btnFechar, BorderLayout.EAST);
 
+        // Arrastar Janela
         MoverJanela listenerMover = new MoverJanela(this);
         barraTitulo.addMouseListener(listenerMover);
         barraTitulo.addMouseMotionListener(listenerMover);
 
         add(barraTitulo, BorderLayout.NORTH);
 
-        // 3. PAINEL CENTRAL DO FORMULÁRIO
+        // ==========================================
+        // 3. FORMULÁRIO DE ENTRADA (NOME E RA)
+        // ==========================================
         JPanel painelForm = new JPanel(new GridBagLayout());
         painelForm.setBackground(Color.decode("#1E1E24"));
         painelForm.setBorder(new EmptyBorder(20, 40, 20, 40));
@@ -97,7 +105,7 @@ public class TelaLogin extends JFrame {
         ));
         painelForm.add(txtNome, gbc);
 
-        // Campo: R.A. com Placeholder
+        // Campo: R.A. (Com Placeholder)
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.0;
@@ -120,7 +128,7 @@ public class TelaLogin extends JFrame {
                 BorderFactory.createEmptyBorder(6, 10, 6, 10)
         ));
 
-        // Controle de Foco (Placeholder visual)
+        // Controle de Foco (Efeito de Placeholder)
         txtRa.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -140,7 +148,9 @@ public class TelaLogin extends JFrame {
         
         painelForm.add(txtRa, gbc);
 
-        // 4. PAINEL DE BOTÕES
+        // ==========================================
+        // 4. PAINEL DE BOTÕES DE AÇÃO
+        // ==========================================
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.weightx = 1.0;
@@ -149,7 +159,7 @@ public class TelaLogin extends JFrame {
         JPanel painelBotoes = new JPanel(new GridLayout(1, 2, 15, 0));
         painelBotoes.setBackground(Color.decode("#1E1E24"));
 
-        // Botão REGISTRAR (Amarelo/Laranja Escuro)
+        // Botão: Registrar
         JButton btnRegistrar = new JButton("REGISTRAR");
         btnRegistrar.setFont(new Font("SansSerif", Font.BOLD, 14));
         btnRegistrar.setForeground(Color.BLACK);
@@ -164,7 +174,7 @@ public class TelaLogin extends JFrame {
         });
         btnRegistrar.addActionListener(e -> executarRegistro());
 
-        // Botão ENTRAR (Primário Ciano)
+        // Botão: Entrar
         JButton btnEntrar = new JButton("ENTRAR");
         btnEntrar.setFont(new Font("SansSerif", Font.BOLD, 14));
         btnEntrar.setForeground(Color.BLACK);
@@ -186,11 +196,13 @@ public class TelaLogin extends JFrame {
         add(painelForm, BorderLayout.CENTER);
     }
 
+    // ==========================================
+    // REGRAS DE NEGÓCIO: LOGIN
+    // ==========================================
     private void executarLogin() {
         String nome = txtNome.getText().trim();
         String ra = txtRa.getText().trim();
 
-        // Ignora a dica de Placeholder
         if (ra.equals("XX.XXXXX-X")) {
             ra = ""; 
         }
@@ -211,11 +223,13 @@ public class TelaLogin extends JFrame {
         abrirLaunchpad(usuario);
     }
 
+    // ==========================================
+    // REGRAS DE NEGÓCIO: REGISTRO
+    // ==========================================
     private void executarRegistro() {
         String nome = txtNome.getText().trim();
         String ra = txtRa.getText().trim();
 
-        // Ignora a dica de Placeholder
         if (ra.equals("XX.XXXXX-X")) {
             ra = ""; 
         }
@@ -241,6 +255,9 @@ public class TelaLogin extends JFrame {
         abrirLaunchpad(novoUsuario);
     }
 
+    // ==========================================
+    // TRANSIÇÃO DE TELAS
+    // ==========================================
     private void abrirLaunchpad(Usuario usuario) {
         List<Preset> presets = Presets.carregarPresetsPadrao();
         Preset presetInicial = presets.get(0);
@@ -250,12 +267,18 @@ public class TelaLogin extends JFrame {
         this.dispose();
     }
 
+    // ==========================================
+    // PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO
+    // ==========================================
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new TelaLogin().setVisible(true);
         });
     }
 
+    // ==========================================
+    // SUBCLASSE: UTILITÁRIO PARA ARRASTAR A JANELA
+    // ==========================================
     class MoverJanela extends MouseAdapter {
         private Point clickInicial;
         private JFrame janela;

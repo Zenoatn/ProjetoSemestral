@@ -9,14 +9,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Classe responsável por realizar as operações de banco de dados para a entidade Usuario.
- */
+// ==========================================
+// DAO PARA OPERAÇÕES DE CRUD DE USUÁRIOS
+// ==========================================
 public class UsuarioDAO {
 
-    /**
-     * Busca um usuário pelo RA. Retorna o usuário se achar, ou null se não existir.
-     */
+    // ==========================================
+    // READ: BUSCAR USUÁRIO PELO RA
+    // ==========================================
     public Usuario buscarPorRa(String ra) {
         String sql = "SELECT ra, nome FROM usuario WHERE ra = ?";
         Usuario usuario = null;
@@ -38,9 +38,9 @@ public class UsuarioDAO {
         return usuario;
     }
 
-    /**
-     * Insere um novo usuário no banco de dados.
-     */
+    // ==========================================
+    // CREATE: INSERIR NOVO USUÁRIO
+    // ==========================================
     public void inserir(Usuario usuario) {
         String sql = "INSERT INTO usuario (ra, nome) VALUES (?, ?)";
 
@@ -58,6 +58,9 @@ public class UsuarioDAO {
         }
     }
 
+    // ==========================================
+    // READ: BUSCAR IDs DOS PRESETS DO USUÁRIO
+    // ==========================================
     public ArrayList<Integer> buscaPresetsUsuario(Usuario usuario){
         String sqlSelectPresets = "SELECT preset_id FROM presets WHERE usuario_ra = ?";
         ArrayList<Integer> presetsUsuario = new ArrayList<>();
@@ -66,39 +69,37 @@ public class UsuarioDAO {
             
             try (PreparedStatement stm = conn.prepareStatement(sqlSelectPresets)) {
                 stm.setString(1, usuario.getRa());
-                try(ResultSet rs = stm.executeQuery();){
+                try(ResultSet rs = stm.executeQuery()){
                     while(rs.next()){
                         presetsUsuario.add(rs.getInt("preset_id"));
                     }
                 }
             }
 
-        }catch (SQLException e) {
-            System.err.println("Erro ao buscar os preset: " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar os presets: " + e.getMessage());
             presetsUsuario.clear();
         }
 
         return presetsUsuario;
     }
 
-    
+    // ==========================================
+    // DELETE: EXCLUIR USUÁRIO
+    // ==========================================
     public void eliminar(Usuario usuario) {
         String sqlDelete = "DELETE FROM usuario WHERE ra = ?";
 
         try (Connection conn = Conexao.getConnection()) {
             
-        
             try (PreparedStatement stmtPreset = conn.prepareStatement(sqlDelete)) {
                 stmtPreset.setString(1, usuario.getRa());
                 stmtPreset.executeUpdate();
                 System.out.println("Usuário deletado");
             }   
 
-
         } catch (SQLException e) {
-            System.err.println("Erro ao eliminar o preset: " + e.getMessage());
+            System.err.println("Erro ao eliminar o usuário: " + e.getMessage());
         }
-
     }
-        
 }

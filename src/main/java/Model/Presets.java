@@ -4,14 +4,21 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+// ==========================================
+// CLASSE UTILITÁRIA PARA CARREGAMENTO DE PRESETS LOCAIS
+// ==========================================
 public class Presets {
     
     public static List<Preset> carregarPresetsPadrao(){
 
         List<Preset> lista = new ArrayList<>();
-
+        
+        // Definição do usuário padrão do sistema
         Usuario sistema = new Usuario("0" , "ROOT");
 
+        // ==========================================
+        // PRESET 1: VAZIO (SEM ÁUDIO)
+        // ==========================================
         DrumKit kitInicial = new DrumKit();
 
         kitInicial.associarSom("Q", null);
@@ -28,10 +35,11 @@ public class Presets {
         kitInicial.associarSom("V", null);  
         
         Preset vazio = new Preset(0,"Vazio", sistema, kitInicial);
-
         lista.add(vazio);
 
-
+        // ==========================================
+        // PRESET 2: DRUMKIT TRAP
+        // ==========================================
         DrumKit trapKit = new DrumKit();
 
         trapKit.associarSom("Q", new File("Assets/DrumKits/Kick/Kick - Drake.wav").getAbsolutePath());
@@ -48,9 +56,11 @@ public class Presets {
         trapKit.associarSom("V", new File("Assets/DrumKits/Loops/loop_rlx.wav").getAbsolutePath());
 
         Preset trap = new Preset(1, "Trap", sistema, trapKit);
-
         lista.add(trap);
 
+        // ==========================================
+        // PRESET 3: DRUMKIT LOFI
+        // ==========================================
         DrumKit lofiKit = new DrumKit();
 
         lofiKit.associarSom("Q", new File("Assets/DrumKits/Kick/CG_Kick (11).wav").getAbsolutePath());
@@ -67,7 +77,6 @@ public class Presets {
         lofiKit.associarSom("V", null);
 
         Preset lofi = new Preset(2, "LoFi", sistema, lofiKit);
-
         lista.add(lofi);
 
         return lista;

@@ -8,14 +8,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
 
-/**
- * Classe responsável por gerir as operações de CRUD para os presets e sons na nuvem da Aiven.
- */
+// ==========================================
+// DAO PARA OPERAÇÕES DE CRUD DE PRESETS
+// ==========================================
 public class PresetDAO {
 
-    /**
-     * [CREATE] Salva o preset e os sons associados no banco de dados.
-     */
+    // ==========================================
+    // CREATE: INSERIR NOVO PRESET E MAPEAMENTOS
+    // ==========================================
     public void salvar(Preset preset) {
         String sqlPreset = "INSERT INTO presets (nome, usuario_ra) VALUES (?, ?)";
         String sqlSom = "INSERT INTO preset_sons (preset_id, tecla, caminho_audio) VALUES (?, ?, ?)";
@@ -55,9 +55,9 @@ public class PresetDAO {
         }
     }
 
-    /**
-     * [READ] Busca todos os presets salvos no banco de dados para um determinado usuário.
-     */
+    // ==========================================
+    // READ: BUSCAR PRESETS POR USUÁRIO
+    // ==========================================
     public java.util.List<Preset> buscarPresetsDoUsuario(Model.Usuario usuario) {
         java.util.List<Preset> lista = new java.util.ArrayList<>();
         
@@ -99,9 +99,9 @@ public class PresetDAO {
         return lista;
     }
 
-    /**
-     * [UPDATE] Atualiza o nome de um preset existente na nuvem.
-     */
+    // ==========================================
+    // UPDATE: ALTERAR NOME DO PRESET
+    // ==========================================
     public void atualizarNome(int idPreset, String novoNome) {
         String sql = "UPDATE presets SET nome = ? WHERE preset_id = ?";
 
@@ -118,21 +118,20 @@ public class PresetDAO {
         }
     }
 
-    /**
-     * [UPDATE] Limpa os sons antigos de um preset e grava a nova configuração.
-     */
+    // ==========================================
+    // UPDATE: SINCRONIZAR SONS (CLEAR & INSERT)
+    // ==========================================
     public void atualizarSons(int idPreset, Model.DrumKit kit) {
         String sqlDelete = "DELETE FROM preset_sons WHERE preset_id = ?";
         String sqlInsert = "INSERT INTO preset_sons (preset_id, tecla, caminho_audio) VALUES (?, ?, ?)";
 
         try (Connection conn = Conexao.getConnection()) {
-            // 1. Limpa tudo o que existia antes para este preset
+            
             try (PreparedStatement stmtDel = conn.prepareStatement(sqlDelete)) {
                 stmtDel.setInt(1, idPreset);
                 stmtDel.executeUpdate();
             }
 
-            // 2. Grava a nova configuração atual do DrumKit
             try (PreparedStatement stmtIns = conn.prepareStatement(sqlInsert)) {
                 Map<String, String> sons = kit.getTodosOsSons();
                 for (Map.Entry<String, String> entry : sons.entrySet()) {
@@ -146,15 +145,15 @@ public class PresetDAO {
                 }
             }
             System.out.println("Sons do preset atualizados na nuvem!");
+            
         } catch (SQLException e) {
             System.err.println("Erro ao atualizar sons: " + e.getMessage());
         }
     }
 
-    /**
-     * [DELETE] Elimina um preset da nuvem de forma definitiva.
-     * Realiza a exclusão em cascata manual: primeiro apaga os sons, depois o preset.
-     */
+    // ==========================================
+    // DELETE: EXCLUIR PRESET EM CASCATA MANUAL
+    // ==========================================
     public void eliminar(int idPreset) {
         String sqlSons = "DELETE FROM preset_sons WHERE preset_id = ?";
         String sqlPreset = "DELETE FROM presets WHERE preset_id = ?";

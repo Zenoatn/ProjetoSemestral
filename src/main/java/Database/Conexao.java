@@ -4,12 +4,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- * Classe responsável por fabricar as conexões com o banco de dados MySQL na Aiven.
- */
 public class Conexao {
     
-    //dados de conexao
+    // ==========================================
+    // CREDENCIAIS E ROTA DO BANCO (NUVEM)
+    // ==========================================
     private static final String HOST = "mysql-dbps-testedbaula.j.aivencloud.com"; 
     private static final String PORTA = "13790"; 
     private static final String BANCO_DE_DADOS = "launchpad.db";
@@ -17,7 +16,9 @@ public class Conexao {
     private static final String USUARIO = "avnadmin";
     private static final String SENHA = "AVNS_QrHcnlLUt9aoqfrwXC1";
 
-    //conexao com o db
+    // ==========================================
+    // FABRICAÇÃO DA CONEXÃO
+    // ==========================================
     public static Connection getConnection() throws SQLException {
         try {
             return DriverManager.getConnection(URL, USUARIO, SENHA);
@@ -27,8 +28,9 @@ public class Conexao {
         }
     }
 
-
-    //teste de conexão
+    // ==========================================
+    // TESTE ISOLADO DE CONEXÃO
+    // ==========================================
     public static void main(String[] args) {
         System.out.println("Tentando conectar à Aiven na nuvem...");
         try {

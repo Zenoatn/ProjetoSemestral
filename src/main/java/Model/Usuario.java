@@ -1,28 +1,25 @@
 package Model;
 
-/* Classe modelo que representa o usuário do sistema.
- * Responsável por armazenar as credenciais básicas que serão 
- * utilizadas na consulta e inserção no banco de dados.
- */
-
-
+// ==========================================
+// ENTIDADE USUÁRIO: IDENTIFICAÇÃO NO SISTEMA
+// ==========================================
 public class Usuario {
     
+    // Atributos de credenciais (RA é a chave primária no banco)
     private String ra;
     private String nome;
 
-    /**
-     * Construtor padrão do Usuário.
-     * * @param ra   Registro Acadêmico do aluno (Chave primária no banco).
-     * @param nome Nome completo do aluno.
-     */
+    // ==========================================
+    // CONSTRUTOR
+    // ==========================================
     public Usuario(String ra, String nome) {
         this.ra = ra;
         this.nome = nome;
     }
 
-    // --- Getters e Setters ---
-
+    // ==========================================
+    // GETTERS E SETTERS
+    // ==========================================
     public String getRa() {
         return ra;
     }

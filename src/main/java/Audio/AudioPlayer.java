@@ -7,67 +7,87 @@ import java.util.Map;
 
 public class AudioPlayer {
     
-    // Mapa que guarda na memória quais teclas estão com o loop ativado
+    // ==========================================
+    // CACHE NA RAM (Áudios abertos e prontos para tocar)
+    // ==========================================
+    private static Map<String, Clip> cacheSons = new HashMap<>();
+    
+    // Gerenciamento dos loops ativos
     private static Map<String, Clip> loopsAtivos = new HashMap<>();
 
-    /**
-     * Toca um som normal uma única vez (One-Shot).
-     */
-    public static void tocarSom(String caminho) {
-        if (caminho == null || caminho.trim().isEmpty()) return;
-        try {
-            File arquivo = new File(caminho);
-            if (arquivo.exists()) {
-                AudioInputStream audioStream = AudioSystem.getAudioInputStream(arquivo);
-                Clip clip = AudioSystem.getClip();
-                clip.open(audioStream);
-                clip.start();
+    // ==========================================
+    // PRÉ-CARREGAMENTO (NOVO)
+    // ==========================================
+    public static void carregarSonsNaMemoria(Map<String, String> mapeamento) {
+        // 1. Limpa o cache antigo da memória RAM para evitar vazamentos
+        for (Clip clip : cacheSons.values()) {
+            if (clip != null) {
+                clip.stop();
+                clip.close();
             }
-        } catch (Exception e) {
-            System.err.println("Erro ao reproduzir o áudio: " + e.getMessage());
+        }
+        cacheSons.clear();
+        loopsAtivos.clear();
+
+        // 2. Carrega todos os novos sons na RAM
+        for (Map.Entry<String, String> entry : mapeamento.entrySet()) {
+            String tecla = entry.getKey();
+            String caminho = entry.getValue();
+
+            if (caminho != null && !caminho.trim().isEmpty()) {
+                try {
+                    File arquivo = new File(caminho);
+                    if (arquivo.exists()) {
+                        AudioInputStream audioStream = AudioSystem.getAudioInputStream(arquivo);
+                        Clip clip = AudioSystem.getClip();
+                        clip.open(audioStream);
+                        cacheSons.put(tecla, clip); // Salva o áudio já aberto e pronto na RAM
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erro ao pré-carregar áudio da tecla " + tecla + ": " + e.getMessage());
+                }
+            }
+        }
+        System.out.println("Áudios pré-carregados na memória RAM com sucesso!");
+    }
+
+    // ==========================================
+    // REPRODUÇÃO DE ÁUDIO (ONE-SHOT) - ZERO DELAY
+    // ==========================================
+    public static void tocarSom(String idTecla) {
+        Clip clip = cacheSons.get(idTecla);
+        if (clip != null) {
+            clip.stop(); // Para o som instantaneamente se você metralhar a mesma tecla
+            clip.setFramePosition(0); // Volta a agulha para o milissegundo zero
+            clip.start(); // Dispara o som
         }
     }
 
-    /**
-     * NOVO: Inicia um áudio em repetição infinita.
-     */
-    public static void iniciarLoop(String caminho, String idTecla) {
-        if (caminho == null || caminho.trim().isEmpty()) return;
-        try {
-            File arquivo = new File(caminho);
-            if (arquivo.exists()) {
-                AudioInputStream audioStream = AudioSystem.getAudioInputStream(arquivo);
-                Clip clip = AudioSystem.getClip();
-                clip.open(audioStream);
-                
-                clip.loop(Clip.LOOP_CONTINUOUSLY); // A magia do loop contínuo
-                loopsAtivos.put(idTecla, clip); // Guarda a referência para podermos parar depois
-            }
-        } catch (Exception e) {
-            System.err.println("Erro ao iniciar o loop: " + e.getMessage());
+    // ==========================================
+    // CONTROLE DE REPETIÇÃO (LOOPS) - ZERO DELAY
+    // ==========================================
+    public static void iniciarLoop(String idTecla) {
+        Clip clip = cacheSons.get(idTecla);
+        if (clip != null) {
+            clip.stop();
+            clip.setFramePosition(0);
+            clip.loop(Clip.LOOP_CONTINUOUSLY); 
+            loopsAtivos.put(idTecla, clip); 
         }
     }
 
-    /**
-     * NOVO: Para o loop específico de uma tecla.
-     */
     public static void pararLoop(String idTecla) {
         Clip clip = loopsAtivos.get(idTecla);
         if (clip != null) {
             clip.stop();
-            clip.close();
             loopsAtivos.remove(idTecla);
         }
     }
 
-    /**
-     * NOVO: Botão de pânico! Corta todo o som de loop de uma vez.
-     */
     public static void pararTodosOsLoops() {
         for (Clip clip : loopsAtivos.values()) {
             if (clip != null) {
                 clip.stop();
-                clip.close();
             }
         }
         loopsAtivos.clear();
