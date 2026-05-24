@@ -15,14 +15,9 @@ import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 
-// ==========================================
-// TELA PRINCIPAL: LAUNCHPAD AVANÇADO
-// ==========================================
 public class LaunchpadAvancado extends JFrame {
 
-    // ==========================================
-    // VARIÁVEIS DE ESTADO E DADOS
-    // ==========================================
+    // Variáveis de estado e dados
     private Usuario usuarioLogado;
     private DrumKit meuDrumKit;
     private List<Preset> presetsUsuario;
@@ -31,18 +26,18 @@ public class LaunchpadAvancado extends JFrame {
     private boolean emModoEdicao = false;
     private Preset presetAtivo = null; 
     
-    // ==========================================
-    // COMPONENTES DE INTERFACE GLOBAL
-    // ==========================================
+    // Componentes de interface global
     private JButton btnPreset;
     private JButton btnExcluirConta;
     private JLabel titulo;
     private JPopupMenu menuPresets;
 
+
+    // ==========================================
+    // TELA PRINCIPAL: LAUNCHPAD AVANÇADO
+    // ==========================================
+
     public LaunchpadAvancado(Usuario usuario, DrumKit kit) {
-        // ==========================================
-        // CARREGAMENTO INICIAL DE DADOS
-        // ==========================================
         this.usuarioLogado = usuario;
         this.meuDrumKit = kit;
         this.listaDePads = new java.util.ArrayList<>();
@@ -55,9 +50,8 @@ public class LaunchpadAvancado extends JFrame {
         List<Preset> presetsBanco = presetDAO.buscarPresetsDoUsuario(usuarioLogado);
         presetsUsuario.addAll(presetsBanco); 
 
-        // ==========================================
-        // 1. CONFIGURAÇÕES DA JANELA PRINCIPAL
-        // ==========================================
+     
+        //Configurações da janela principal
         setSize(800, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -65,9 +59,7 @@ public class LaunchpadAvancado extends JFrame {
         setUndecorated(true); 
         getContentPane().setBackground(Color.decode("#1E1E24")); 
 
-        // ==========================================
-        // 2. BARRA DE TÍTULO CUSTOMIZADA
-        // ==========================================
+        //Barra de título customizada
         JPanel barraTitulo = new JPanel(new BorderLayout());
         barraTitulo.setBackground(Color.decode("#121212"));
         barraTitulo.setPreferredSize(new Dimension(getWidth(), 35));
@@ -108,9 +100,7 @@ public class LaunchpadAvancado extends JFrame {
 
         add(barraTitulo, BorderLayout.NORTH);
 
-        // ==========================================
-        // 3. GRID DE PADS (BOTÕES DO LAUNCHPAD)
-        // ==========================================
+        // Grid dos pads(botões do launchpad)
         JPanel painelPad = new JPanel(new GridLayout(3, 4, 20, 20)); 
         painelPad.setBackground(Color.decode("#1E1E24"));
         painelPad.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
@@ -143,9 +133,7 @@ public class LaunchpadAvancado extends JFrame {
 
         add(painelPad, BorderLayout.CENTER);
 
-        // ==========================================
-        // 4. RODAPÉ E CONTROLES DE USUÁRIO
-        // ==========================================
+        // Rodapé e controle de usuário
         JPanel painelRodape = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         painelRodape.setBackground(Color.decode("#121212"));
 
@@ -273,6 +261,12 @@ public class LaunchpadAvancado extends JFrame {
         }
     }
 
+
+
+    // ==========================================
+    // Carrega o preset selecionado para o pad
+    // ==========================================
+
     private void carregarPreset(Preset preset){
         desligarLoops(); 
         this.presetAtivo = preset; 
@@ -284,6 +278,10 @@ public class LaunchpadAvancado extends JFrame {
         carregarMenuPresets(); 
         JOptionPane.showMessageDialog(this, "Preset '" + preset.getNome() + "' carregado com sucesso!");
     }
+
+    // ==========================================
+    // Função para renomear o preset atualmente selecionado
+    // ==========================================
 
     private void renomearPresetAtivo() {
         if (presetAtivo == null) return;
@@ -297,6 +295,10 @@ public class LaunchpadAvancado extends JFrame {
             JOptionPane.showMessageDialog(this, "Preset renomeado com sucesso!");
         }
     }
+
+    // ==========================================
+    // Função para apagar o preset atualmente selecionado
+    // ==========================================
 
     private void eliminarPresetAtivo() {
         if (presetAtivo == null) return;
@@ -318,8 +320,9 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     // ==========================================
-    // OPERAÇÕES DE USUÁRIO (CASCADE DELETE)
+    // FUNÇÃO PARA DELETAR O USUÁRIO E TUDO RELEACIONADO A ELE
     // ==========================================
+
     private void eliminarUsuarioAtivo(){
         int resposta = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja eliminar o usuario '" + usuarioLogado.getNome() + 
             "' e todos seus presets?", "Confirmar Eliminação", JOptionPane.YES_NO_OPTION);
