@@ -51,15 +51,16 @@ public class LaunchpadAvancado extends JFrame {
         presetsUsuario.addAll(presetsBanco); 
 
      
-        //Configurações da janela principal
+        // Configurações da janela principal
         setSize(800, 650);
+        setIconImage(new ImageIcon("Assets/Launchpad_Icon.png").getImage());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         setUndecorated(true); 
         getContentPane().setBackground(Color.decode("#1E1E24")); 
 
-        //Barra de título customizada
+        // Barra de título customizada
         JPanel barraTitulo = new JPanel(new BorderLayout());
         barraTitulo.setBackground(Color.decode("#121212"));
         barraTitulo.setPreferredSize(new Dimension(getWidth(), 35));
@@ -134,8 +135,9 @@ public class LaunchpadAvancado extends JFrame {
         add(painelPad, BorderLayout.CENTER);
 
         // Rodapé e controle de usuário
-        JPanel painelRodape = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel painelRodape = new JPanel(new BorderLayout());
         painelRodape.setBackground(Color.decode("#121212"));
+        painelRodape.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
         // Dropdown de Presets
         btnPreset = new JButton("Presets ▾");
@@ -147,7 +149,7 @@ public class LaunchpadAvancado extends JFrame {
 
         // Botão de Deletar Conta
         JButton btnExlcuirUsuario = new JButton("Excluir conta");
-        btnExlcuirUsuario.setFont(new Font("SansSerif", Font.BOLD, 14));
+        btnExlcuirUsuario.setFont(new Font("SansSerif", Font.BOLD, 12));
         btnExlcuirUsuario.setForeground(Color.WHITE);
         btnExlcuirUsuario.setBackground(Color.decode("#CC3333"));
         btnExlcuirUsuario.setFocusPainted(false);
@@ -176,8 +178,8 @@ public class LaunchpadAvancado extends JFrame {
             }
         });
 
-        painelRodape.add(btnPreset);
-        painelRodape.add(btnExlcuirUsuario);
+        painelRodape.add(btnExlcuirUsuario, BorderLayout.WEST);
+        painelRodape.add(btnPreset, BorderLayout.EAST);
         add(painelRodape, BorderLayout.SOUTH);
 
         // ==========================================
@@ -231,7 +233,7 @@ public class LaunchpadAvancado extends JFrame {
                 Database.PresetDAO dao = new Database.PresetDAO();
                 dao.atualizarSons(presetAtivo.getPresetId(), meuDrumKit);
                 
-                JOptionPane.showMessageDialog(this, "Preset '" + presetAtivo.getNome() + "' atualizado com sucesso!");
+                JOptionPane.showMessageDialog(this, "Preset '" + presetAtivo.getNome() + "' updated com sucesso!");
                 emModoEdicao = false;
                 restaurarVisualPadrao();
                 
