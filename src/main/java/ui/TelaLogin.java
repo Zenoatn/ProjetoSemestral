@@ -18,7 +18,7 @@ import java.util.List;
 public class TelaLogin extends JFrame {
 
     private JTextField txtNome;
-    private JTextField txtRa;
+    private JTextField txtSenha;
 
     public TelaLogin() {
         // ==========================================
@@ -74,7 +74,7 @@ public class TelaLogin extends JFrame {
         add(barraTitulo, BorderLayout.NORTH);
 
         // ==========================================
-        // 3. FORMULÁRIO DE ENTRADA (NOME E RA)
+        // 3. FORMULÁRIO DE ENTRADA (NOME E SENHA)
         // ==========================================
         JPanel painelForm = new JPanel(new GridBagLayout());
         painelForm.setBackground(Color.decode("#1E1E24"));
@@ -106,48 +106,48 @@ public class TelaLogin extends JFrame {
         ));
         painelForm.add(txtNome, gbc);
 
-        // Campo: R.A. (Com Placeholder)
+        // Campo: Senha (Com Placeholder)
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.0;
-        JLabel lblRa = new JLabel("RA (XX.XXXXX-X):");
-        lblRa.setForeground(Color.LIGHT_GRAY);
-        lblRa.setFont(new Font("SansSerif", Font.BOLD, 14));
-        painelForm.add(lblRa, gbc);
+        JLabel lblSenha = new JLabel("Senha:");
+        lblSenha.setForeground(Color.LIGHT_GRAY);
+        lblSenha.setFont(new Font("SansSerif", Font.BOLD, 14));
+        painelForm.add(lblSenha, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.weightx = 1.0;
         
-        txtRa = new JTextField("XX.XXXXX-X"); 
-        txtRa.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        txtRa.setBackground(Color.decode("#2A2A35"));
-        txtRa.setForeground(Color.GRAY); 
-        txtRa.setCaretColor(Color.WHITE);
-        txtRa.setBorder(BorderFactory.createCompoundBorder(
+        txtSenha = new JTextField("Senha:"); 
+        txtSenha.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        txtSenha.setBackground(Color.decode("#2A2A35"));
+        txtSenha.setForeground(Color.GRAY); 
+        txtSenha.setCaretColor(Color.WHITE);
+        txtSenha.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.decode("#3A3A45"), 1),
                 BorderFactory.createEmptyBorder(6, 10, 6, 10)
         ));
 
         // Controle de Foco (Efeito de Placeholder)
-        txtRa.addFocusListener(new FocusAdapter() {
+        txtSenha.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (txtRa.getText().equals("XX.XXXXX-X")) {
-                    txtRa.setText("");
-                    txtRa.setForeground(Color.WHITE); 
+                if (txtSenha.getText().equals("Senha:")) {
+                    txtSenha.setText("");
+                    txtSenha.setForeground(Color.WHITE); 
                 }
             }
             @Override
             public void focusLost(FocusEvent e) {
-                if (txtRa.getText().isEmpty()) {
-                    txtRa.setForeground(Color.GRAY);
-                    txtRa.setText("XX.XXXXX-X");
+                if (txtSenha.getText().isEmpty()) {
+                    txtSenha.setForeground(Color.GRAY);
+                    txtSenha.setText("Senha:");
                 }
             }
         });
         
-        painelForm.add(txtRa, gbc);
+        painelForm.add(txtSenha, gbc);
 
         // ==========================================
         // 4. PAINEL DE BOTÕES DE AÇÃO
@@ -202,22 +202,27 @@ public class TelaLogin extends JFrame {
     // ==========================================
     private void executarLogin() {
         String nome = txtNome.getText().trim();
-        String ra = txtRa.getText().trim();
+        String senha = txtSenha.getText().trim();
 
-        if (ra.equals("XX.XXXXX-X")) {
-            ra = ""; 
+        if (senha.equals("Senha:")) {
+            senha = ""; 
         }
 
-        if (nome.isEmpty() || ra.isEmpty()) {
+        if (nome.isEmpty() || senha.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         UsuarioDAO usuarioDAO = new UsuarioDAO();
-        Usuario usuario = usuarioDAO.buscarPorRa(ra);
+        Usuario usuario = usuarioDAO.buscarPorNome(nome);
 
         if (usuario == null) {
-            JOptionPane.showMessageDialog(this, "Usuário não encontrado! Verifique o R.A. digitado ou clique em 'REGISTRAR'.", "Acesso Negado", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Usuário não encontrado! Verifique o nome digitado ou clique em 'REGISTRAR'.", "Acesso Negado", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (!(senha.equals(usuarioDAO.carregaSenha(usuario)))){
+            JOptionPane.showMessageDialog(this, "Senha inválida! Verifique a senha digitada ou clique em 'REGISTRAR'.", "Acesso Negado", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -229,26 +234,26 @@ public class TelaLogin extends JFrame {
     // ==========================================
     private void executarRegistro() {
         String nome = txtNome.getText().trim();
-        String ra = txtRa.getText().trim();
+        String senha = txtSenha.getText().trim();
 
-        if (ra.equals("XX.XXXXX-X")) {
-            ra = ""; 
+        if (senha.equals("Senha:")) {
+            senha = ""; 
         }
 
-        if (nome.isEmpty() || ra.isEmpty()) {
+        if (nome.isEmpty() || senha.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos para se registrar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         UsuarioDAO usuarioDAO = new UsuarioDAO();
-        Usuario usuarioExistente = usuarioDAO.buscarPorRa(ra);
+        Usuario usuarioExistente = usuarioDAO.buscarPorNome(nome);
 
         if (usuarioExistente != null) {
-            JOptionPane.showMessageDialog(this, "Este R.A. já possui cadastro! Por favor, clique em 'ENTRAR'.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Este Usuário já possui cadastro! Por favor, clique em 'ENTRAR'.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        Usuario novoUsuario = new Usuario(ra, nome);
+        Usuario novoUsuario = new Usuario(senha, nome);
         usuarioDAO.inserir(novoUsuario);
         
         JOptionPane.showMessageDialog(this, "Cadastro realizado com sucesso! Bem-vindo(a), " + nome + ".", "Sucesso", JOptionPane.INFORMATION_MESSAGE);

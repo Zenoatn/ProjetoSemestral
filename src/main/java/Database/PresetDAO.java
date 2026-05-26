@@ -17,14 +17,14 @@ public class PresetDAO {
     // CREATE: INSERIR NOVO PRESET E MAPEAMENTOS
     // ==========================================
     public void salvar(Preset preset) {
-        String sqlPreset = "INSERT INTO presets (nome, usuario_ra) VALUES (?, ?)";
+        String sqlPreset = "INSERT INTO presets (nome, usuario_nome) VALUES (?, ?)";
         String sqlSom = "INSERT INTO preset_sons (preset_id, tecla, caminho_audio) VALUES (?, ?, ?)";
 
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmtPreset = conn.prepareStatement(sqlPreset, Statement.RETURN_GENERATED_KEYS)) {
 
             stmtPreset.setString(1, preset.getNome());
-            stmtPreset.setString(2, preset.getCriador().getRa());
+            stmtPreset.setString(2, preset.getCriador().getNome());
             stmtPreset.executeUpdate();
 
             try (ResultSet rs = stmtPreset.getGeneratedKeys()) {
@@ -61,13 +61,13 @@ public class PresetDAO {
     public java.util.List<Preset> buscarPresetsDoUsuario(Model.Usuario usuario) {
         java.util.List<Preset> lista = new java.util.ArrayList<>();
         
-        String sqlPresets = "SELECT preset_id, nome FROM presets WHERE usuario_ra = ?";
+        String sqlPresets = "SELECT preset_id, nome FROM presets WHERE usuario_nome = ?";
         String sqlSons = "SELECT tecla, caminho_audio FROM preset_sons WHERE preset_id = ?";
 
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmtPreset = conn.prepareStatement(sqlPresets)) {
 
-            stmtPreset.setString(1, usuario.getRa());
+            stmtPreset.setString(1, usuario.getNome());
             
             try (ResultSet rsPreset = stmtPreset.executeQuery()) {
                 while (rsPreset.next()) {

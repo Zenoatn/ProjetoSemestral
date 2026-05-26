@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class Conexao {
     
     // ==========================================
-    // CREDENCIAIS E ROTA DO BANCO (NUVEM)
+    // CREDENCIAIS DO BANCO DE DADOS
     // ==========================================
     private static final String HOST = "mysql-dbps-testedbaula.j.aivencloud.com"; 
     private static final String PORTA = "13790"; 
@@ -23,19 +23,19 @@ public class Conexao {
         try {
             return DriverManager.getConnection(URL, USUARIO, SENHA);
         } catch (SQLException e) {
-            System.err.println("Erro crítico: Falha ao conectar com o banco de dados na Aiven!");
+            System.err.println("Falha ao conectar no banco de dados!");
             throw e;
         }
     }
 
     // ==========================================
-    // TESTE ISOLADO DE CONEXÃO
+    // TESTE DE CONEXÃO
     // ==========================================
     public static void main(String[] args) {
-        System.out.println("Tentando conectar à Aiven na nuvem...");
+        System.out.println("Tentando conectar ao banco...");
         try {
             Connection conn = getConnection();
-            System.out.println(" SUCESSO ABSOLUTO! O seu Java acabou de logar no banco de dados da Aiven!");
+            System.out.println("Banco de dados conectado!");
             conn.close();
         } catch (SQLException e) {
             System.err.println("ERRO AO CONECTAR:");

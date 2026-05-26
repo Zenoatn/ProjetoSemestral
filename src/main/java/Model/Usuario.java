@@ -5,27 +5,27 @@ package Model;
 // ==========================================
 public class Usuario {
     
-    // Atributos de credenciais (RA é a chave primária no banco)
-    private String ra;
+    // Atributos de credenciais (Nome é a chave essencial do banco)
+    private String senha;
     private String nome;
 
     // ==========================================
     // CONSTRUTOR
     // ==========================================
-    public Usuario(String ra, String nome) {
-        this.ra = ra;
+    public Usuario(String senha, String nome) {
+        this.senha = senha;
         this.nome = nome;
     }
 
     // ==========================================
     // GETTERS E SETTERS
     // ==========================================
-    public String getRa() {
-        return ra;
+    public String getSenha() {
+        return senha;
     }
 
-    public void setRa(String ra) {
-        this.ra = ra;
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 
     public String getNome() {
