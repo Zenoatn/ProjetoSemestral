@@ -4,6 +4,7 @@ import Model.Usuario;
 import Model.DrumKit;
 import Model.Preset;
 import Model.Presets;
+import Model.HashUtil;
 import Database.UsuarioDAO;
 
 import javax.swing.*;
@@ -18,7 +19,8 @@ import java.util.List;
 public class TelaLogin extends JFrame {
 
     private JTextField txtNome;
-    private JTextField txtSenha;
+    private JPasswordField txtSenha;
+    private JCheckBox chkMostrarSenha;
 
     public TelaLogin() {
         // ==========================================
@@ -106,7 +108,7 @@ public class TelaLogin extends JFrame {
         ));
         painelForm.add(txtNome, gbc);
 
-        // Campo: Senha (Com Placeholder)
+        // Campo: Senha (Com Placeholder e Mascaramento)
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.0;
@@ -119,7 +121,7 @@ public class TelaLogin extends JFrame {
         gbc.gridy = 3;
         gbc.weightx = 1.0;
         
-        txtSenha = new JTextField("Senha:"); 
+        txtSenha = new JPasswordField("Senha:"); 
         txtSenha.setFont(new Font("SansSerif", Font.PLAIN, 14));
         txtSenha.setBackground(Color.decode("#2A2A35"));
         txtSenha.setForeground(Color.GRAY); 
@@ -128,21 +130,31 @@ public class TelaLogin extends JFrame {
                 BorderFactory.createLineBorder(Color.decode("#3A3A45"), 1),
                 BorderFactory.createEmptyBorder(6, 10, 6, 10)
         ));
+        
+       
+        txtSenha.setEchoChar((char) 0); 
 
-        // Controle de Foco (Efeito de Placeholder)
+        // Controle de Foco (Efeito de Placeholder + Máscara)
         txtSenha.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (txtSenha.getText().equals("Senha:")) {
+                String pass = String.valueOf(txtSenha.getPassword());
+                if (pass.equals("Senha:")) {
                     txtSenha.setText("");
                     txtSenha.setForeground(Color.WHITE); 
+                    // Esconde os caracteres
+                    if (!chkMostrarSenha.isSelected()) {
+                        txtSenha.setEchoChar('\u2022'); 
+                    }
                 }
             }
             @Override
             public void focusLost(FocusEvent e) {
-                if (txtSenha.getText().isEmpty()) {
+                String pass = String.valueOf(txtSenha.getPassword());
+                if (pass.isEmpty()) {
                     txtSenha.setForeground(Color.GRAY);
                     txtSenha.setText("Senha:");
+                    txtSenha.setEchoChar((char) 0); // Mostra o placeholder sem máscara
                 }
             }
         });
@@ -150,12 +162,40 @@ public class TelaLogin extends JFrame {
         painelForm.add(txtSenha, gbc);
 
         // ==========================================
-        // 4. PAINEL DE BOTÕES DE AÇÃO
+        // CHECKBOX: MOSTRAR SENHA
         // ==========================================
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.weightx = 1.0;
-        gbc.insets = new Insets(25, 10, 10, 10);
+        gbc.insets = new Insets(0, 10, 10, 10); 
+        
+        chkMostrarSenha = new JCheckBox("Mostrar senha");
+        chkMostrarSenha.setBackground(Color.decode("#1E1E24"));
+        chkMostrarSenha.setForeground(Color.GRAY);
+        chkMostrarSenha.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        chkMostrarSenha.setFocusPainted(false);
+        chkMostrarSenha.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        chkMostrarSenha.addActionListener(e -> {
+            String pass = String.valueOf(txtSenha.getPassword());
+            if (!pass.equals("Senha:")) {
+                if (chkMostrarSenha.isSelected()) {
+                    txtSenha.setEchoChar((char) 0); 
+                } else {
+                    txtSenha.setEchoChar('\u2022'); 
+                }
+            }
+        });
+        
+        painelForm.add(chkMostrarSenha, gbc);
+
+        // ==========================================
+        // 4. PAINEL DE BOTÕES DE AÇÃO
+        // ==========================================
+        gbc.gridx = 0;
+        gbc.gridy = 5; 
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(15, 10, 10, 10);
         
         JPanel painelBotoes = new JPanel(new GridLayout(1, 2, 15, 0));
         painelBotoes.setBackground(Color.decode("#1E1E24"));
@@ -202,7 +242,7 @@ public class TelaLogin extends JFrame {
     // ==========================================
     private void executarLogin() {
         String nome = txtNome.getText().trim();
-        String senha = txtSenha.getText().trim();
+        String senha = String.valueOf(txtSenha.getPassword()).trim();
 
         if (senha.equals("Senha:")) {
             senha = ""; 
@@ -221,7 +261,9 @@ public class TelaLogin extends JFrame {
             return;
         }
 
-        if (!(senha.equals(usuarioDAO.carregaSenha(usuario)))){
+        String senhaDigitadaHash = HashUtil.gerarHash(senha);
+
+        if (!(senhaDigitadaHash.equals(usuarioDAO.carregaSenha(usuario)))){
             JOptionPane.showMessageDialog(this, "Senha inválida! Verifique a senha digitada ou clique em 'REGISTRAR'.", "Acesso Negado", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -234,7 +276,7 @@ public class TelaLogin extends JFrame {
     // ==========================================
     private void executarRegistro() {
         String nome = txtNome.getText().trim();
-        String senha = txtSenha.getText().trim();
+        String senha = String.valueOf(txtSenha.getPassword()).trim();
 
         if (senha.equals("Senha:")) {
             senha = ""; 
@@ -253,7 +295,9 @@ public class TelaLogin extends JFrame {
             return;
         }
 
-        Usuario novoUsuario = new Usuario(senha, nome);
+        String senhaCriptografada = HashUtil.gerarHash(senha);
+        Usuario novoUsuario = new Usuario(senhaCriptografada, nome);
+        
         usuarioDAO.inserir(novoUsuario);
         
         JOptionPane.showMessageDialog(this, "Cadastro realizado com sucesso! Bem-vindo(a), " + nome + ".", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
