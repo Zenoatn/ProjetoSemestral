@@ -89,7 +89,7 @@ public class TelaLogin extends JFrame {
         // Campo: Nome Completo
         gbc.gridx = 0;
         gbc.gridy = 0;
-        JLabel lblNome = new JLabel("Nome Completo:");
+        JLabel lblNome = new JLabel("Usuário:");
         lblNome.setForeground(Color.LIGHT_GRAY);
         lblNome.setFont(new Font("SansSerif", Font.BOLD, 14));
         painelForm.add(lblNome, gbc);

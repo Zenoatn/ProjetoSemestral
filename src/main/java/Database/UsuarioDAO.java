@@ -1,13 +1,11 @@
 package Database;
 
-import Model.Preset;
 import Model.Usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
 // ==========================================
 // DAO PARA OPERAÇÕES DE CRUD DE USUÁRIOS
@@ -106,8 +104,6 @@ public class UsuarioDAO {
     // ==========================================
     // BUSCA A SENHA DO USUÁRIO
     // ==========================================
-
-
     public String carregaSenha(Usuario usuario){
         String sqlSenha = "SELECT senha FROM usuario WHERE nome =?";
         String senha = "";

@@ -5,7 +5,6 @@ import Model.DrumKit;
 import Model.Preset;
 import Model.Presets;
 import Audio.AudioPlayer;
-import Database.PresetDAO;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,7 +27,6 @@ public class LaunchpadAvancado extends JFrame {
     
     // Componentes de interface global
     private JButton btnPreset;
-    private JButton btnExcluirConta;
     private JLabel titulo;
     private JPopupMenu menuPresets;
 
@@ -36,7 +34,6 @@ public class LaunchpadAvancado extends JFrame {
     // ==========================================
     // TELA PRINCIPAL: LAUNCHPAD AVANÇADO
     // ==========================================
-
     public LaunchpadAvancado(Usuario usuario, DrumKit kit) {
         this.usuarioLogado = usuario;
         this.meuDrumKit = kit;
@@ -266,9 +263,8 @@ public class LaunchpadAvancado extends JFrame {
 
 
     // ==========================================
-    // Carrega o preset selecionado para o pad
+    // CARREGA O PRESET SELECIONADO PARA O PAD
     // ==========================================
-
     private void carregarPreset(Preset preset){
         desligarLoops(); 
         this.presetAtivo = preset; 
@@ -282,9 +278,8 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     // ==========================================
-    // Função para renomear o preset atualmente selecionado
+    // RENOMEIA O PRESET ATUALMENTE SELECIONADO
     // ==========================================
-
     private void renomearPresetAtivo() {
         if (presetAtivo == null) return;
         String novoNome = JOptionPane.showInputDialog(this, "Introduza o novo nome para o preset:", presetAtivo.getNome());
@@ -299,9 +294,8 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     // ==========================================
-    // Função para apagar o preset atualmente selecionado
+    // APAGA O PRESET ATUALMENTE SELECIONADO
     // ==========================================
-
     private void eliminarPresetAtivo() {
         if (presetAtivo == null) return;
         int resposta = JOptionPane.showConfirmDialog(this, 
@@ -322,7 +316,7 @@ public class LaunchpadAvancado extends JFrame {
     }
 
     // ==========================================
-    // FUNÇÃO PARA DELETAR O USUÁRIO E TUDO RELEACIONADO A ELE
+    // DELETA O USUÁRIO E TUDO RELEACIONADO A ELE
     // ==========================================
 
     private void eliminarUsuarioAtivo(){
