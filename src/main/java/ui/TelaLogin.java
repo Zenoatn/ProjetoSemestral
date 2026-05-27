@@ -86,7 +86,7 @@ public class TelaLogin extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(10, 10, 10, 10);
 
-        // Campo: Nome Completo
+        // Campo: Nome de Usuário
         gbc.gridx = 0;
         gbc.gridy = 0;
         JLabel lblNome = new JLabel("Usuário:");
